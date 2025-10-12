@@ -584,19 +584,15 @@
                     <textarea id="specialInstructions" placeholder="Any specific requests..."></textarea>
                 </div>
                 <div class="payment-details">
-    <h3>Bank Transfer Details</h3>
-    <p>Please transfer the total amount to the account below:</p>
-    <div style="margin-top: 1rem;">
-        <p><strong>Account Name:</strong> Abdulla Jailam</p>
-        <p><strong>Account Number:</strong> 777488484848848</p>
-        <p><em>After payment, upload your slip below.</em></p>
-    </div>
-</div>
-
-    <p style="margin-top: 1rem; font-style: italic; color: #666;">
-        After payment, upload your slip below.
-    </p>
-</div>
+                    <h3>Payment Information</h3>
+                    <p>Upload your payment slip below:</p>
+                    <div class="file-upload" id="paymentSlipUpload">
+                        <i class="fas fa-file-upload"></i>
+                        <p>Click to upload payment slip</p>
+                        <p class="file-name" id="fileName">No file selected</p>
+                        <input type="file" id="paymentSlip" accept="image/*">
+                    </div>
+                </div>
                 
                 <button type="submit" class="btn checkout-btn">Place Order</button>
             </form>
@@ -872,6 +868,7 @@ const { data, error } = await supabase.storage
     </script>
 </body>
 </html>
+
 
 
 
