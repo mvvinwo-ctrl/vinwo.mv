@@ -583,26 +583,15 @@
                     <label for="specialInstructions">Special Instructions</label>
                     <textarea id="specialInstructions" placeholder="Any specific requests..."></textarea>
                 </div>
-                
                 <div class="payment-details">
     <h3>Bank Transfer Details</h3>
     <p>Please transfer the total amount to the account below:</p>
-
-    <div class="form-group" style="margin-top: 1rem;">
-        <label>Account Name</label>
-        <div style="display: flex; gap: 0.5rem;">
-            <input type="text" value="Abdulla Jailam" readonly style="flex: 1; background: #f9f9f9;">
-            <button type="button" class="btn" onclick="copyText('Abdulla Jailam')" style="padding: 0.6rem 0.8rem; font-size: 0.9rem;">Copy</button>
-        </div>
+    <div style="margin-top: 1rem;">
+        <p><strong>Account Name:</strong> Abdulla Jailam</p>
+        <p><strong>Account Number:</strong> 777488484848848</p>
+        <p><em>After payment, upload your slip below.</em></p>
     </div>
-
-    <div class="form-group">
-        <label>Account Number</label>
-        <div style="display: flex; gap: 0.5rem;">
-            <input type="text" value="777488484848848" readonly style="flex: 1; background: #f9f9f9;">
-            <button type="button" class="btn" onclick="copyText('777488484848848')" style="padding: 0.6rem 0.8rem; font-size: 0.9rem;">Copy</button>
-        </div>
-    </div>
+</div>
 
     <p style="margin-top: 1rem; font-style: italic; color: #666;">
         After payment, upload your slip below.
@@ -883,6 +872,7 @@ const { data, error } = await supabase.storage
     </script>
 </body>
 </html>
+
 
 
 
