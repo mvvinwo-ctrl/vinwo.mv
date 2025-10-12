@@ -1,11 +1,12 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vinwo MV - Flower Bouquets</title>
+    <!-- Fixed: Removed trailing spaces -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Supabase JS Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         /* ====== YOUR EXISTING CSS (unchanged) ====== */
@@ -628,9 +629,9 @@
     </footer>
 
     <script>
-        // === SUPABASE CONFIGURATION ===
-        const supabaseUrl = 'https://bchygqpxmrovtetxwmrp.supabase.co'; // ← REPLACE
-        const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjaHlncXB4bXJvdnRldHh3bXJwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAyMDE0MjgsImV4cCI6MjA3NTc3NzQyOH0.q-FPZb1yqHKBwmPQkJfly49UBNLMJToStsXwrwMVB-M';               // ← REPLACE
+        // === FIXED SUPABASE CONFIGURATION ===
+        const supabaseUrl = 'https://bchygqpxmrovtetxwmrp.supabase.co'; // ← NO TRAILING SPACES!
+        const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjaHlncXB4bXJvdnRldHh3bXJwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAyMDE0MjgsImV4cCI6MjA3NTc3NzQyOH0.q-FPZb1yqHKBwmPQkJfly49UBNLMJToStsXwrwMVB-M';
         const supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
 
         // === UI Elements ===
@@ -760,7 +761,7 @@
 
             if (error) {
                 console.error('Error loading products:', error);
-                document.getElementById('productsContainer').innerHTML = '<p style="text-align:center;color:red;">Failed to load products.</p>';
+                document.getElementById('productsContainer').innerHTML = '<p style="text-align:center;color:red;">Failed to load products. Check console.</p>';
                 return;
             }
 
@@ -818,6 +819,7 @@
                     return;
                 }
 
+                // ✅ FIXED: Correct way to get public URL
                 const { data: { publicUrl } } = supabase.storage
                     .from('payment-slips')
                     .getPublicUrl(filePath);
