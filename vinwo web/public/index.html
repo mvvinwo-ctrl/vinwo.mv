@@ -808,10 +808,10 @@
             let paymentSlipUrl = null;
             const file = paymentSlip.files[0];
             if (file) {
-                const filePath = `payment_slips/${Date.now()}_${file.name}`;
-                const { data, error } = await supabase.storage
-                    .from('payment-slips')
-                    .upload(filePath, file);
+                const filePath = `product-images/${Date.now()}_${file.name}`;
+const { data, error } = await supabase.storage
+  .from('product-images')
+  .upload(filePath, file);
 
                 if (error) {
                     alert('Failed to upload payment slip.');
@@ -869,3 +869,4 @@
     </script>
 </body>
 </html>
+
