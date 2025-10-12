@@ -1,599 +1,996 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Florist Home Page - Beautiful Flowers</title>
+    <title>Vinwo MV - Flower Bouquets</title>
+    <!-- Fixed: Removed trailing spaces -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+    * {a
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    :root {
+        --primary: #2c3e50;       /* Dark Blue */
+        --secondary: #bdc3c7;     /* Light Grey */
+        --accent: #3498db;        /* Blue */
+        --dark: #2c3e50;          /* Dark Blue */
+        --light: #ffffff;         /* White */
+        --card-bg: #ffffff;
+        --shadow: rgba(0, 0, 0, 0.05);
+    }
+
+    body {
+        background-color: var(--light);
+        color: var(--dark);
+        line-height: 1.6;
+    }
+
+    header {
+        background: white;
+        color: var(--dark);
+        padding: 1rem 2rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+    }
+
+    .header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .logo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .logo i {
+        font-size: 2rem;
+        color: var(--primary);
+    }
+
+    .logo h1 {
+        font-size: 1.8rem;
+        font-weight: 600;
+        color: var(--dark);
+        letter-spacing: -0.5px;
+    }
+
+    nav ul {
+        display: flex;
+        list-style: none;
+        gap: 2rem;
+    }
+
+    nav a {
+        color: var(--dark);
+        text-decoration: none;
+        font-weight: 500;
+        transition: 0.3s;
+        position: relative;
+        padding-bottom: 4px;
+    }
+
+    nav a::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 0;
+        height: 2px;
+        background: var(--primary);
+        transition: width 0.3s ease;
+    }
+
+    nav a:hover {
+        color: var(--primary);
+    }
+
+    nav a:hover::after {
+        width: 100%;
+    }
+
+    .cart-icon {
+        position: relative;
+        cursor: pointer;
+        font-size: 1.5rem;
+        color: var(--dark);
+        transition: transform 0.2s;
+    }
+
+    .cart-icon:hover {
+        transform: scale(1.1);
+    }
+
+    .cart-count {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        background: var(--primary);
+        color: white;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 0.8rem;
+        font-weight: bold;
+    }
+
+    .hero {
+        background: linear-gradient(rgba(44, 62, 80, 0.9), rgba(44, 62, 80, 0.9)), url('img.1.jpg');
+        background-size: cover;
+        background-position: center;
+        color: white;
+        text-align: center;
+        padding: 5rem 1rem;
+    }
+
+    .hero h2 {
+        font-size: 2.8rem;
+        margin-bottom: 1rem;
+        font-weight: 700;
+        letter-spacing: -0.5px;
+        color: white;
+    }
+
+    .hero p {
+        font-size: 1.2rem;
+        max-width: 600px;
+        margin: 0 auto 2rem;
+        color: #bdc3c7;
+    }
+
+    .btn {
+        display: inline-block;
+        background: var(--secondary);
+        color: var(--dark);
+        padding: 0.8rem 1.5rem;
+        border-radius: 30px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: 0.3s;
+        border: none;
+        cursor: pointer;
+        font-size: 1.05rem;
+    }
+
+    .btn:hover {
+        background: #95a5a6;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(44, 62, 80, 0.15);
+    }
+
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 3rem 1rem;
+    }
+
+    .section-title {
+        text-align: center;
+        margin-bottom: 2rem;
+        color: var(--dark);
+        font-size: 2.2rem;
+        font-weight: 700;
+        position: relative;
+    }
+
+    .section-title:after {
+        content: '';
+        display: block;
+        width: 80px;
+        height: 4px;
+        background: var(--primary);
+        margin: 10px auto;
+        border-radius: 2px;
+    }
+
+    .products {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
+
+    .product-card {
+        background: var(--card-bg);
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 16px var(--shadow);
+        transition: 0.3s;
+    }
+
+    .product-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.05);
+    }
+
+    .product-img {
+        height: 200px;
+        width: 100%;
+        object-fit: cover;
+    }
+
+    .product-info {
+        padding: 1.5rem;
+    }
+
+    .product-title {
+        font-size: 1.2rem;
+        margin-bottom: 0.5rem;
+        color: var(--dark);
+        font-weight: 600;
+    }
+
+    .product-price {
+        color: var(--primary);
+        font-weight: 600;
+        font-size: 1.3rem;
+        margin-bottom: 1rem;
+    }
+
+    .add-to-cart {
+        width: 100%;
+        background: var(--secondary);
+        color: var(--dark);
+        font-weight: 600;
+        padding: 0.8rem;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .add-to-cart:hover {
+        background: #95a5a6;
+        transform: translateY(-2px);
+    }
+
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.4);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .modal-content {
+        background: white;
+        width: 90%;
+        max-width: 600px;
+        border-radius: 16px;
+        padding: 2rem;
+        max-height: 90vh;
+        overflow-y: auto;
+        position: relative;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.05);
+    }
+
+    .close-modal {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: var(--dark);
+        opacity: 0.7;
+        transition: opacity 0.2s;
+    }
+
+    .close-modal:hover {
+        opacity: 1;
+    }
+
+    .modal-header {
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #eee;
+    }
+
+    .modal-header h2 {
+        font-size: 1.6rem;
+        color: var(--dark);
+    }
+
+    .cart-items {
+        margin-bottom: 1.5rem;
+    }
+
+    .cart-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 0;
+        border-bottom: 1px solid #eee;
+    }
+
+    .item-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .item-img {
+        width: 60px;
+        height: 60px;
+        object-fit: cover;
+        border-radius: 8px;
+    }
+
+    .item-details h4 {
+        margin-bottom: 0.3rem;
+        color: var(--dark);
+    }
+
+    .item-controls {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .quantity-btn {
+        background: #f0f0f0;
+        border: none;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-weight: bold;
+        color: var(--dark);
+        transition: background 0.2s;
+    }
+
+    .quantity-btn:hover {
+        background: #e0e0e0;
+    }
+
+    .remove-item {
+        color: #ff6b6b;
+        background: none;
+        border: none;
+        cursor: pointer;
+        margin-left: 1rem;
+        font-size: 1.1rem;
+    }
+
+    .cart-total {
+        display: flex;
+        justify-content: space-between;
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        padding-top: 1rem;
+        border-top: 2px solid #eee;
+        color: var(--dark);
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+        color: var(--dark);
+    }
+
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+        width: 100%;
+        padding: 0.8rem;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-size: 1rem;
+        background: #fafafa;
+        transition: border 0.3s, box-shadow 0.3s;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(44, 62, 80, 0.1);
+    }
+
+    .form-group textarea {
+        min-height: 100px;
+        resize: vertical;
+    }
+
+    .form-row {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .form-row .form-group {
+        flex: 1;
+    }
+
+    .checkout-btn {
+        width: 100%;
+        background: var(--primary);
+        color: white;
+        padding: 0.8rem;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        font-weight: 600;
+        margin-top: 1rem;
+        transition: background 0.3s, transform 0.2s;
+    }
+
+    .checkout-btn:hover {
+        background: #1a252c;
+        transform: translateY(-2px);
+    }
+
+    .payment-details {
+        background: #f8f8f8;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin: 1.5rem 0;
+        border-left: 4px solid var(--primary);
+    }
+
+    .payment-details h3 {
+        margin-bottom: 1rem;
+        color: var(--dark);
+        font-size: 1.2rem;
+    }
+
+    .file-upload {
+        border: 2px dashed #ddd;
+        border-radius: 12px;
+        padding: 2rem;
+        text-align: center;
+        margin: 1rem 0;
+        cursor: pointer;
+        transition: 0.3s;
+        background: #fafafa;
+    }
+
+    .file-upload:hover {
+        border-color: var(--primary);
+        background: #f0f7f0;
+    }
+
+    .file-upload i {
+        font-size: 2rem;
+        color: var(--primary);
+        margin-bottom: 1rem;
+    }
+
+    .file-upload input {
+        display: none;
+    }
+
+    .file-name {
+        margin-top: 1rem;
+        font-style: italic;
+        color: #666;
+    }
+
+    .success-message {
+        display: none;
+        text-align: center;
+        padding: 2rem;
+        background: #e8f5e9;
+        border-radius: 12px;
+        margin-top: 1rem;
+    }
+
+    .success-message i {
+        font-size: 3rem;
+        color: #4caf50;
+        margin-bottom: 1rem;
+    }
+
+    footer {
+        background: var(--dark);
+        color: white;
+        text-align: center;
+        padding: 2rem 1rem;
+        margin-top: 3rem;
+    }
+
+    .contact-info {
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+        margin: 1.5rem 0;
+    }
+
+    .contact-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    @media (max-width: 768px) {
+        .header-content {
+            flex-direction: column;
+            gap: 1rem;
         }
-
-        body {
-            background-color: #f9f7f7;
-            color: #333;
-            line-height: 1.6;
-        }
-
-        .container {
-            width: 90%;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        /* Header Styles */
-        header {
-            background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
-            padding: 15px 0;
-            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .header-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            font-size: 28px;
-            font-weight: bold;
-            color: #fff;
-            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
-        }
-
-        .nav-links {
-            display: flex;
-            list-style: none;
-            gap: 25px;
-        }
-
-        .nav-links a {
-            text-decoration: none;
-            color: #fff;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            padding: 5px 10px;
-            border-radius: 4px;
-        }
-
-        .nav-links a:hover {
-            background-color: rgba(255, 255, 255, 0.2);
-        }
-
-        .auth-buttons {
-            display: flex;
-            gap: 15px;
-        }
-
-        .btn {
-            padding: 8px 20px;
-            border-radius: 30px;
-            border: none;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-
-        .btn-login {
-            background: transparent;
-            border: 2px solid #fff;
-            color: #fff;
-        }
-
-        .btn-login:hover {
-            background: #fff;
-            color: #ff6b81;
-        }
-
-        .btn-signup {
-            background: #fff;
-            color: #ff6b81;
-            border: 2px solid #fff;
-        }
-
-        .btn-signup:hover {
-            background: transparent;
-            color: #fff;
-        }
-
-        /* Hero Section */
-        .hero {
-            background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('https://images.unsplash.com/photo-1487070183333-3c0a47163b64?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80') no-repeat center center/cover;
-            height: 500px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            color: white;
-            margin-bottom: 50px;
-        }
-
-        .hero-content {
-            max-width: 800px;
-            padding: 0 20px;
-        }
-
-        .hero h1 {
-            font-size: 48px;
-            margin-bottom: 20px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-        }
-
-        .hero p {
-            font-size: 20px;
-            margin-bottom: 30px;
-        }
-
-        .btn-hero {
-            background: #ff6b81;
-            color: white;
-            padding: 12px 30px;
-            font-size: 18px;
-            border-radius: 30px;
-            border: none;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .btn-hero:hover {
-            background: #ff5270;
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        /* Main Content Styles */
-        .main-content {
-            padding: 60px 0;
-            background-color: #fff;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-            margin-bottom: 50px;
-        }
-
-        .section-title {
-            text-align: center;
-            margin-bottom: 40px;
-            color: #ff6b81;
-            font-size: 32px;
-            position: relative;
-        }
-
-        .section-title::after {
-            content: '';
-            display: block;
-            width: 80px;
-            height: 3px;
-            background: #ff6b81;
-            margin: 10px auto;
-        }
-
-        .content-text {
-            max-width: 800px;
-            margin: 0 auto 40px;
-            text-align: center;
-            font-size: 18px;
-            color: #666;
-            line-height: 1.8;
-        }
-
-        /* Specialties Section */
-        .specialties {
-            background-color: #f8f9fa;
-            padding: 60px 0;
-            border-radius: 10px;
-            margin-bottom: 50px;
-        }
-
-        .specialty-cards {
-            display: flex;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 30px;
-        }
-
-        .card {
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            padding: 30px;
-            flex: 1;
-            min-width: 250px;
-            transition: transform 0.3s ease;
-            text-align: center;
-        }
-
-        .card:hover {
-            transform: translateY(-10px);
-        }
-
-        .card i {
-            font-size: 40px;
-            color: #ff6b81;
-            margin-bottom: 20px;
-        }
-
-        .card h3 {
-            color: #ff6b81;
-            margin-bottom: 15px;
-            font-size: 22px;
-        }
-
-        .card p {
-            color: #666;
-            line-height: 1.6;
-        }
-
-        /* Login Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal-content {
-            background: white;
-            padding: 40px;
-            border-radius: 10px;
-            width: 90%;
-            max-width: 400px;
-            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
-            position: relative;
-        }
-
-        .close-modal {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            font-size: 24px;
-            cursor: pointer;
-            color: #888;
-        }
-
-        .close-modal:hover {
-            color: #333;
-        }
-
-        .modal h2 {
-            text-align: center;
-            margin-bottom: 30px;
-            color: #ff6b81;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: #555;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 16px;
-        }
-
-        .form-group input:focus {
-            border-color: #ff6b81;
-            outline: none;
-        }
-
-        .btn-modal {
-            width: 100%;
-            padding: 12px;
-            background: #ff6b81;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background 0.3s ease;
-        }
-
-        .btn-modal:hover {
-            background: #ff5270;
-        }
-
-        .form-footer {
-            text-align: center;
-            margin-top: 20px;
-            color: #666;
-        }
-
-        .form-footer a {
-            color: #ff6b81;
-            text-decoration: none;
-        }
-
-        /* Footer Styles */
-        footer {
-            background: #333;
-            color: white;
-            padding: 40px 0;
-            text-align: center;
-        }
-
-        .footer-content {
-            display: flex;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 30px;
-        }
-
-        .footer-section {
-            flex: 1;
-            min-width: 200px;
-        }
-
-        .footer-section h3 {
-            margin-bottom: 20px;
-            color: #ff6b81;
-        }
-
-        .footer-section p, .footer-section a {
-            color: #ccc;
-            line-height: 1.8;
-            text-decoration: none;
-        }
-
-        .footer-section a:hover {
-            color: #ff6b81;
-        }
-
-        .social-icons {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-top: 20px;
-        }
-
-        .social-icons a {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 40px;
-            height: 40px;
-            background: #444;
-            border-radius: 50%;
-            color: white;
-            transition: all 0.3s ease;
-        }
-
-        .social-icons a:hover {
-            background: #ff6b81;
-            transform: translateY(-3px);
-        }
-
-        .copyright {
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid #444;
-            color: #999;
-            font-size: 14px;
-        }
-
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .header-container {
-                flex-direction: column;
-                gap: 15px;
-            }
-
-            .nav-links {
-                flex-wrap: wrap;
-                justify-content: center;
-                gap: 10px;
-            }
-
-            .hero h1 {
-                font-size: 36px;
-            }
-
-            .hero p {
-                font-size: 18px;
-            }
-
-            .specialty-cards {
-                flex-direction: column;
-            }
-        }
-    </style>
+        nav ul { gap: 1rem; }
+        .hero h2 { font-size: 2.2rem; }
+        .products { grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); }
+        .contact-info { flex-direction: column; gap: 1rem; }
+        .form-row { flex-direction: column; gap: 0; }
+    }
+</style>
 </head>
 <body>
-    <!-- Header Section -->
+    <!-- Header -->
     <header>
-        <div class="container header-container">
-            <div class="logo">Florist Home Page</div>
-            <ul class="nav-links">
-                <li><a href="#">Living</a></li>
-                <li><a href="#">Home</a></li>
-                <li><a href="#">Salary</a></li>
-                <li><a href="#">Pep</a></li>
-                <li><a href="#">About</a></li>
-                <li><a href="#">General</a></li>
-                <li><a href="#">Play</a></li>
-            </ul>
-            <div class="auth-buttons">
-                <button class="btn btn-login" id="loginBtn">Login</button>
-                <button class="btn btn-signup" id="signupBtn">Sign Up</button>
+        <div class="header-content">
+            <div class="logo">
+                <i class="fas fa-spa"></i>
+                <h1>Vinwo MV</h1>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#products">Products</a></li>
+                    <li><a href="#about">About</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+            </nav>
+            <div class="cart-icon" id="cartIcon">
+                <i class="fas fa-shopping-cart"></i>
+                <span class="cart-count">0</span>
             </div>
         </div>
     </header>
 
     <!-- Hero Section -->
-    <section class="hero">
-        <div class="hero-content">
-            <h1>Flower Shop</h1>
-            <p>Hulls are long as difficult to tell, or affected based prior on this term legal account of illegal in America or Iran.</p>
-            <button class="btn-hero">Shop Now</button>
+    <section class="hero" id="home">
+        <h2>Beautiful Flower Bouquets for Every Occasion</h2>
+        <p>Handcrafted with love and care to brighten your special moments</p>
+        <a href="#products" class="btn">Shop Now</a>
+    </section>
+
+    <!-- Products Section -->
+    <section class="container" id="products">
+        <h2 class="section-title">Our Bouquets</h2>
+        <div class="products" id="productsContainer">
+            <!-- Products loaded from Supabase -->
         </div>
     </section>
 
-    <!-- Main Content Section -->
-    <section class="main-content">
-        <div class="container">
-            <h2 class="section-title">Our Story</h2>
-            <p class="content-text">
-                Not a long wait but also did not work for this person or. But with 100% hours at hospital before care. Changes are very easy, and is relevant correctly. We believe in creating beautiful floral arrangements that bring joy and happiness to every occasion.
-            </p>
+    <!-- About Section -->
+    <section class="container" id="about">
+        <h2 class="section-title">About Vinwo MV</h2>
+        <div style="text-align: center; max-width: 800px; margin: 0 auto;">
+            <p>Vinwo MV is dedicated to creating beautiful, handcrafted flower bouquets for all your special occasions.</p>
+            <p>We source the freshest flowers and work with skilled florists to ensure every bouquet is a work of art.</p>
         </div>
     </section>
 
-    <!-- Specialties Section -->
-    <section class="specialties">
-        <div class="container">
-            <h2 class="section-title">Our Specialties</h2>
-            <div class="specialty-cards">
-                <div class="card">
-                    <i class="fas fa-birthday-cake"></i>
-                    <h3>Birthday Bouquets</h3>
-                    <p>Bright and cheerful arrangements perfect for celebrating special days and making memories.</p>
-                </div>
-                <div class="card">
-                    <i class="fas fa-heart"></i>
-                    <h3>Romantic Arrangements</h3>
-                    <p>Express your love with our stunning romantic bouquets designed to capture the heart.</p>
-                </div>
-                <div class="card">
-                    <i class="fas fa-hand-holding-heart"></i>
-                    <h3>Sympathy Flowers</h3>
-                    <p>Thoughtful and respectful arrangements to express condolences and show support.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Login Modal -->
-    <div class="modal" id="loginModal">
+    <!-- Cart Modal -->
+    <div class="modal" id="cartModal">
         <div class="modal-content">
-            <span class="close-modal" id="closeModal">&times;</span>
-            <h2>Login to Your Account</h2>
-            <form id="loginForm">
-                <div class="form-group">
-                    <label for="email">Email Address</label>
-                    <input type="email" id="email" placeholder="Enter your email" required>
-                </div>
-                <div class="form-group">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" placeholder="Enter your password" required>
-                </div>
-                <button type="submit" class="btn-modal">Login</button>
-                <div class="form-footer">
-                    <p>Don't have an account? <a href="#" id="switchToSignup">Sign up</a></p>
-                </div>
-            </form>
+            <button class="close-modal" id="closeCart">&times;</button>
+            <div class="modal-header">
+                <h2>Your Cart</h2>
+            </div>
+            <div class="cart-items" id="cartItems">
+                <p id="emptyCartMessage">Your cart is empty</p>
+            </div>
+            <div class="cart-total">
+                <span>Total:</span>
+                <span id="cartTotal">MVR0.00</span>
+            </div>
+            <button class="btn checkout-btn" id="checkoutBtn">Proceed to Checkout</button>
         </div>
     </div>
 
-    <!-- Footer Section -->
-    <footer>
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <h3>Contact Us</h3>
-                    <p>123 Flower Street</p>
-                    <p>Bloomsville, FL 12345</p>
-                    <p>Phone: (555) 123-4567</p>
-                    <p>Email: info@flowershop.com</p>
-                </div>
-                <div class="footer-section">
-                    <h3>Quick Links</h3>
-                    <p><a href="#">Home</a></p>
-                    <p><a href="#">About</a></p>
-                    <p><a href="#">Services</a></p>
-                    <p><a href="#">Gallery</a></p>
-                    <p><a href="#">Contact</a></p>
-                </div>
-                <div class="footer-section">
-                    <h3>Business Hours</h3>
-                    <p>Monday - Friday: 9am - 6pm</p>
-                    <p>Saturday: 10am - 4pm</p>
-                    <p>Sunday: Closed</p>
-                    <div class="social-icons">
-                        <a href="#"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#"><i class="fab fa-twitter"></i></a>
-                        <a href="#"><i class="fab fa-instagram"></i></a>
-                        <a href="#"><i class="fab fa-pinterest"></i></a>
+    <!-- Checkout Modal -->
+    <div class="modal" id="checkoutModal">
+        <div class="modal-content">
+            <button class="close-modal" id="closeCheckout">&times;</button>
+            <div class="modal-header">
+                <h2>Checkout</h2>
+                <p>Please fill in your details to complete your order</p>
+            </div>
+            <form id="customerForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="customerName">Full Name *</label>
+                        <input type="text" id="customerName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="customerPhone">Phone Number *</label>
+                        <input type="tel" id="customerPhone" required>
                     </div>
                 </div>
+                <div class="form-group">
+                    <label for="customerEmail">Email Address *</label>
+                    <input type="email" id="customerEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="deliveryAddress">Delivery Address *</label>
+                    <textarea id="deliveryAddress" required></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="deliveryDate">Preferred Delivery Date</label>
+                        <input type="date" id="deliveryDate">
+                    </div>
+                    <div class="form-group">
+                        <label for="deliveryTime">Preferred Delivery Time</label>
+                        <select id="deliveryTime">
+                            <option value="">Any time</option>
+                            <option value="Morning (9AM-12PM)">Morning (9AM-12PM)</option>
+                            <option value="Afternoon (12PM-5PM)">Afternoon (12PM-5PM)</option>
+                            <option value="Evening (5PM-8PM)">Evening (5PM-8PM)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="specialInstructions">Special Instructions</label>
+                    <textarea id="specialInstructions" placeholder="Any specific requests..."></textarea>
+                </div>
+                <div class="payment-details">
+                    <h3>Payment Information</h3>
+                    <p>Upload your payment slip below:</p>
+                    <div class="file-upload" id="paymentSlipUpload">
+                        <i class="fas fa-file-upload"></i>
+                        <p>Click to upload payment slip</p>
+                        <p class="file-name" id="fileName">No file selected</p>
+                        <input type="file" id="paymentSlip" accept="image/*">
+                    </div>
+                </div>
+                <div class="payment-details">
+    <h3>Bank Transfer Details</h3>
+    <p>Please transfer the total amount to the account below:</p>
+    <div style="margin-top: 1rem;">
+        <p><strong>Account Name:</strong> Abdulla Jailam</p>
+        <p><strong>Account Number:</strong> 777488484848848</p>
+        <p><em>After payment, upload your slip below.</em></p>
+    </div>
+</div>
+                
+                <button type="submit" class="btn checkout-btn">Place Order</button>
+            </form>
+            <div class="success-message" id="successMessage">
+                <i class="fas fa-check-circle"></i>
+                <h3>Order Placed Successfully!</h3>
+                <p>Your order has been sent to the admin. You’ll be contacted shortly.</p>
+                <button class="btn" id="continueShopping">Continue Shopping</button>
             </div>
-            <div class="copyright">
-                <p>&copy; 2023 Flower Shop. All rights reserved.</p>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer id="contact">
+        <div class="container">
+            <h2 class="section-title" style="color: white;">Contact Us</h2>
+            <div class="contact-info">
+                <div class="contact-item">
+                    <i class="fab fa-whatsapp"></i>
+                    <span>7995251</span>
+                </div>
+                <div class="contact-item">
+                    <i class="fas fa-envelope"></i>
+                    <span>info@vinwomv.com</span>
+                </div>
+                <div class="contact-item">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span>Flower Street, Maldives</span>
+                </div>
             </div>
+            <p>&copy; 2025 Vinwo MV. All rights reserved.</p>
         </div>
     </footer>
 
     <script>
-        // Modal functionality
-        const loginBtn = document.getElementById('loginBtn');
-        const signupBtn = document.getElementById('signupBtn');
-        const loginModal = document.getElementById('loginModal');
-        const closeModal = document.getElementById('closeModal');
-        const switchToSignup = document.getElementById('switchToSignup');
-        const loginForm = document.getElementById('loginForm');
+        // === FIXED SUPABASE CONFIGURATION ===
+        const supabaseUrl = 'https://bchygqpxmrovtetxwmrp.supabase.co'; // ← NO TRAILING SPACES!
+        const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjaHlncXB4bXJvdnRldHh3bXJwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAyMDE0MjgsImV4cCI6MjA3NTc3NzQyOH0.q-FPZb1yqHKBwmPQkJfly49UBNLMJToStsXwrwMVB-M';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
 
-        // Open modal when login button is clicked
-        loginBtn.addEventListener('click', () => {
-            loginModal.style.display = 'flex';
+        // === UI Elements ===
+        let cart = [];
+        const cartIcon = document.getElementById('cartIcon');
+        const cartModal = document.getElementById('cartModal');
+        const closeCart = document.getElementById('closeCart');
+        const cartItems = document.getElementById('cartItems');
+        const cartTotal = document.getElementById('cartTotal');
+        const emptyCartMessage = document.getElementById('emptyCartMessage');
+        const checkoutBtn = document.getElementById('checkoutBtn');
+        const cartCount = document.querySelector('.cart-count');
+        const checkoutModal = document.getElementById('checkoutModal');
+        const closeCheckout = document.getElementById('closeCheckout');
+        const customerForm = document.getElementById('customerForm');
+        const successMessage = document.getElementById('successMessage');
+        const continueShopping = document.getElementById('continueShopping');
+        const paymentSlipUpload = document.getElementById('paymentSlipUpload');
+        const paymentSlip = document.getElementById('paymentSlip');
+        const fileName = document.getElementById('fileName');
+
+        // Modal controls
+        cartIcon.addEventListener('click', () => cartModal.style.display = 'flex');
+        closeCart.addEventListener('click', () => cartModal.style.display = 'none');
+        closeCheckout.addEventListener('click', () => checkoutModal.style.display = 'none');
+        window.addEventListener('click', e => {
+            if (e.target === cartModal) cartModal.style.display = 'none';
+            if (e.target === checkoutModal) checkoutModal.style.display = 'none';
         });
 
-        // Open modal when signup button is clicked
-        signupBtn.addEventListener('click', () => {
-            loginModal.style.display = 'flex';
+        continueShopping.addEventListener('click', () => {
+            checkoutModal.style.display = 'none';
+            successMessage.style.display = 'none';
+            customerForm.style.display = 'block';
+            customerForm.reset();
+            fileName.textContent = "No file selected";
+            cart = [];
+            updateCart();
         });
 
-        // Close modal when X is clicked
-        closeModal.addEventListener('click', () => {
-            loginModal.style.display = 'none';
-        });
-
-        // Close modal when clicking outside the modal content
-        window.addEventListener('click', (e) => {
-            if (e.target === loginModal) {
-                loginModal.style.display = 'none';
+        paymentSlipUpload.addEventListener('click', () => paymentSlip.click());
+        paymentSlip.addEventListener('change', () => {
+            if (paymentSlip.files[0]) {
+                fileName.textContent = paymentSlip.files[0].name;
             }
         });
 
-        // Form submission
-        loginForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            
-            // In a real application, you would send this data to a server
-            alert(`Login attempted with:\nEmail: ${email}\nPassword: ${password}`);
-            
-            // Close modal after "login"
-            loginModal.style.display = 'none';
-            
-            // Clear form
-            loginForm.reset();
+        checkoutBtn.addEventListener('click', () => {
+            if (cart.length === 0) {
+                alert('Your cart is empty!');
+                return;
+            }
+            cartModal.style.display = 'none';
+            checkoutModal.style.display = 'flex';
+            successMessage.style.display = 'none';
+            customerForm.style.display = 'block';
         });
 
-        // Switch to signup form (placeholder functionality)
-        switchToSignup.addEventListener('click', (e) => {
+        // Cart functions
+        function updateCart() {
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            cartCount.textContent = totalItems;
+            cartItems.innerHTML = '';
+
+            if (cart.length === 0) {
+                emptyCartMessage.style.display = 'block';
+                checkoutBtn.disabled = true;
+            } else {
+                emptyCartMessage.style.display = 'none';
+                checkoutBtn.disabled = false;
+                cart.forEach(item => {
+                    const el = document.createElement('div');
+                    el.className = 'cart-item';
+                    el.innerHTML = `
+                        <div class="item-info">
+                            <img src="${item.img}" alt="${item.name}" class="item-img">
+                            <div class="item-details">
+                                <h4>${item.name}</h4>
+                                <p>MVR${item.price.toFixed(2)}</p>
+                            </div>
+                        </div>
+                        <div class="item-controls">
+                            <button class="quantity-btn decrease" data-id="${item.id}">-</button>
+                            <span>${item.quantity}</span>
+                            <button class="quantity-btn increase" data-id="${item.id}">+</button>
+                            <button class="remove-item" data-id="${item.id}"><i class="fas fa-trash"></i></button>
+                        </div>
+                    `;
+                    cartItems.appendChild(el);
+                });
+
+                document.querySelectorAll('.decrease').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const id = btn.dataset.id;
+                        const item = cart.find(i => i.id === id);
+                        if (item.quantity > 1) item.quantity--;
+                        else cart = cart.filter(i => i.id !== id);
+                        updateCart();
+                    });
+                });
+                document.querySelectorAll('.increase').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const id = btn.dataset.id;
+                        const item = cart.find(i => i.id === id);
+                        item.quantity++;
+                        updateCart();
+                    });
+                });
+                document.querySelectorAll('.remove-item').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const id = btn.dataset.id;
+                        cart = cart.filter(i => i.id !== id);
+                        updateCart();
+                    });
+                });
+            }
+
+            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            cartTotal.textContent = `MVR${total.toFixed(2)}`;
+        }
+        function copyText(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        alert('✅ Copied to clipboard!');
+    }).catch(err => {
+        console.error('Failed to copy:', err);
+        // Fallback for older browsers
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        alert('✅ Copied!');
+    });
+}
+
+        // Load products from Supabase
+        async function loadProducts() {
+            const { data, error } = await supabase
+                .from('products')
+                .select('*');
+
+            if (error) {
+                console.error('Error loading products:', error);
+                document.getElementById('productsContainer').innerHTML = '<p style="text-align:center;color:red;">Failed to load products. Check console.</p>';
+                return;
+            }
+
+            const container = document.getElementById('productsContainer');
+            container.innerHTML = '';
+
+            data.forEach(p => {
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                card.innerHTML = `
+                    <img src="${p.img}" alt="${p.name}" class="product-img">
+                    <div class="product-info">
+                        <h3 class="product-title">${p.name}</h3>
+                        <p class="product-price">MVR${parseFloat(p.price).toFixed(2)}</p>
+                        <button class="btn add-to-cart" 
+                          data-id="${p.id}" 
+                          data-name="${p.name}" 
+                          data-price="${p.price}" 
+                          data-img="${p.img}">Add to Cart</button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+
+            document.querySelectorAll('.add-to-cart').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const id = btn.dataset.id;
+                    const name = btn.dataset.name;
+                    const price = parseFloat(btn.dataset.price);
+                    const img = btn.dataset.img;
+                    const existing = cart.find(item => item.id === id);
+                    if (existing) existing.quantity++;
+                    else cart.push({ id, name, price, img, quantity: 1 });
+                    updateCart();
+                    cartModal.style.display = 'flex';
+                });
+            });
+        }
+
+        // Submit order to Supabase
+        customerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            alert('Sign up form would appear here in a complete implementation');
+
+            let paymentSlipUrl = null;
+            const file = paymentSlip.files[0];
+            if (file) {
+                const filePath = `product-images/${Date.now()}_${file.name}`;
+const { data, error } = await supabase.storage
+  .from('product-images')
+  .upload(filePath, file);
+
+                if (error) {
+                    alert('Failed to upload payment slip.');
+                    console.error('Upload error:', error);
+                    return;
+                }
+
+                // ✅ FIXED: Correct way to get public URL
+                const { data: { publicUrl } } = supabase.storage
+                    .from('payment-slips')
+                    .getPublicUrl(filePath);
+                paymentSlipUrl = publicUrl;
+            }
+
+            const newOrder = {
+                customer_name: customerName.value,
+                customer_phone: customerPhone.value,
+                customer_email: customerEmail.value,
+                delivery_address: deliveryAddress.value,
+                delivery_date: deliveryDate.value || null,
+                delivery_time: deliveryTime.value || null,
+                special_instructions: specialInstructions.value || null,
+                items: cart.map(i => ({
+                    id: i.id,
+                    name: i.name,
+                    price: i.price,
+                    quantity: i.quantity
+                })),
+                total: cart.reduce((sum, i) => sum + (i.price * i.quantity), 0),
+                payment_slip_url: paymentSlipUrl,
+                status: 'new'
+            };
+
+            const { error: orderError } = await supabase
+                .from('orders')
+                .insert([newOrder]);
+
+            if (orderError) {
+                console.error('Order error:', orderError);
+                alert('Failed to place order. Please try again.');
+                return;
+            }
+
+            // Show success
+            customerForm.style.display = 'none';
+            successMessage.style.display = 'block';
+            cart = [];
+            updateCart();
         });
+
+        // Init
+        document.getElementById('deliveryDate').min = new Date().toISOString().split('T')[0];
+        loadProducts();
+        updateCart();
     </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
