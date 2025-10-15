@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vinwo MV - Flower Bouquets</title>
+    <title>Vinwo MV - Flower Shop</title>
     <!-- Fixed: Removed trailing spaces -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -24,8 +23,8 @@
         --light: #ffffff;         /* White */
         --card-bg: #ffffff;
         --shadow: rgba(0, 0, 0, 0.05);
-        --fiorello-red: #d9534f;  /* Fiorello accent color */
-        --fiorello-light: #f8f8f8; /* Fiorello background */
+        --florist-dark: #2c3e50;  /* Florist theme dark blue */
+        --florist-light: #f8f8f8; /* Light background for sections */
     }
 
     body {
@@ -49,16 +48,16 @@
     }
 
     .logo {
-        font-size: 1.8rem;
-        font-weight: 700;
-        letter-spacing: 1px;
-        color: var(--fiorello-red); /* Fiorello red */
+        font-size: 1.4rem;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        color: var(--dark);
     }
 
     nav ul {
         display: flex;
         list-style: none;
-        gap: 2rem;
+        gap: 1.5rem;
         font-size: 0.9rem;
         font-weight: 500;
     }
@@ -73,7 +72,7 @@
 
     nav a:hover,
     nav a.active {
-        color: var(--fiorello-red);
+        color: var(--primary);
     }
 
     nav a::after {
@@ -83,25 +82,13 @@
         left: 0;
         width: 0;
         height: 2px;
-        background: var(--fiorello-red);
+        background: var(--primary);
         transition: width 0.3s ease;
     }
 
     nav a:hover::after,
     nav a.active::after {
         width: 100%;
-    }
-
-    .header-right {
-        display: flex;
-        align-items: center;
-        gap: 1.5rem;
-    }
-
-    .search-icon {
-        color: var(--dark);
-        cursor: pointer;
-        font-size: 1.2rem;
     }
 
     .cart-icon {
@@ -120,7 +107,7 @@
         position: absolute;
         top: -8px;
         right: -8px;
-        background: var(--fiorello-red);
+        background: var(--primary);
         color: white;
         border-radius: 50%;
         width: 20px;
@@ -134,143 +121,104 @@
 
     /* === HERO SECTION === */
     .hero {
-        background: var(--fiorello-light);
-        padding: 4rem 2rem;
-        display: flex;
-        align-items: center;
-        gap: 3rem;
-        max-width: 1200px;
-        margin: 0 auto;
+        background: url('imj.png') no-repeat center center;
+        background-size: cover;
+        color: white;
+        padding: 5rem 2rem;
+        position: relative;
+    }
+
+    .hero::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(44, 62, 80, 0.7); /* Dark overlay */
+        z-index: 1;
     }
 
     .hero-content {
-        flex: 1;
-        max-width: 500px;
+        max-width: 600px;
+        position: relative;
+        z-index: 2;
     }
 
-    .hero h2 {
-        font-size: 2.8rem;
+    .hero h1 {
+        font-size: 3.5rem;
         margin-bottom: 1rem;
         font-weight: 700;
         letter-spacing: -0.5px;
-        color: var(--dark);
-    }
-
-    .hero h2 span {
-        color: var(--fiorello-red); /* Fiorello red */
+        color: white;
+        font-family: 'Georgia', serif; /* Elegant serif font */
     }
 
     .hero p {
         font-size: 1.1rem;
-        margin: 1rem 0 2rem;
-        color: #666;
+        margin-bottom: 2rem;
+        color: #bdc3c7;
         line-height: 1.8;
     }
 
-    .signature {
-        font-family: 'Dancing Script', cursive;
-        font-size: 2.5rem;
-        color: var(--fiorello-red); /* Fiorello red */
-        margin-top: 1rem;
-    }
-
-    .hero-image {
-        flex: 1;
-        overflow: hidden;
-        border-radius: 8px;
-        position: relative;
-    }
-
-    .hero-image img {
-        width: 100%;
-        height: auto;
-        object-fit: cover;
-        transition: transform 0.5s ease;
-    }
-
-    .hero-image:hover img {
-        transform: scale(1.05);
-    }
-
-    /* === CATEGORY FILTER === */
-    .category-filter {
-        max-width: 1200px;
-        margin: 2rem auto;
-        padding: 0 2rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        border-bottom: 1px solid #eee;
-        padding-bottom: 1rem;
-    }
-
-    .category-list {
-        display: flex;
-        list-style: none;
-        gap: 2rem;
-    }
-
-    .category-list li {
-        font-size: 0.9rem;
-        font-weight: 500;
+    .btn {
+        display: inline-block;
+        background: #95a5a6;
+        color: white;
+        padding: 0.8rem 1.5rem;
+        border-radius: 30px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: 0.3s;
+        border: none;
         cursor: pointer;
-        color: #666;
-        transition: color 0.3s;
+        font-size: 1.05rem;
     }
 
-    .category-list li.active {
-        color: var(--fiorello-red);
-        position: relative;
+    .btn:hover {
+        background: #7f8c8d;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(44, 62, 80, 0.15);
     }
 
-    .category-list li.active::after {
-        content: '';
-        position: absolute;
-        bottom: -8px;
-        left: 0;
-        width: 100%;
-        height: 2px;
-        background: var(--fiorello-red);
-    }
-
-    .filter-dropdown {
-        position: relative;
-        cursor: pointer;
-        font-size: 0.9rem;
-        font-weight: 500;
-        color: #666;
-    }
-
-    .filter-dropdown::after {
-        content: '▼';
-        margin-left: 5px;
-        font-size: 0.7rem;
-    }
-
-    /* === PRODUCTS SECTION === */
-    .products-container {
-        max-width: 1200px;
-        margin: 2rem auto;
-        padding: 0 2rem;
+    /* === SPECIALTIES SECTION === */
+    .specialties {
+        background: var(--florist-light);
+        padding: 4rem 2rem;
+        text-align: center;
     }
 
     .section-title {
-        text-align: center;
-        margin-bottom: 2rem;
-        color: var(--dark);
         font-size: 2.2rem;
         font-weight: 700;
+        color: var(--dark);
+        margin-bottom: 1rem;
         position: relative;
     }
 
     .section-title:after {
         content: '';
         display: block;
-        width: 80px;
+        width: 40px;
         height: 4px;
         background: var(--primary);
         margin: 10px auto;
         border-radius: 2px;
+    }
+
+    .specialties-text {
+        max-width: 800px;
+        margin: 0 auto;
+        font-size: 1.1rem;
+        color: #666;
+        line-height: 1.8;
+    }
+
+    /* === PRODUCTS SECTION === */
+    .products-container {
+        max-width: 1200px;
+        margin: 3rem auto;
+        padding: 0 2rem;
     }
 
     .products-grid {
@@ -285,7 +233,6 @@
         overflow: hidden;
         box-shadow: 0 4px 16px var(--shadow);
         transition: 0.3s;
-        position: relative;
     }
 
     .product-card:hover {
@@ -294,23 +241,17 @@
     }
 
     .product-img {
-        height: 300px;
+        height: 200px;
         width: 100%;
         object-fit: cover;
-        transition: transform 0.5s ease;
-    }
-
-    .product-card:hover .product-img {
-        transform: scale(1.05);
     }
 
     .product-info {
         padding: 1.5rem;
-        text-align: center;
     }
 
     .product-title {
-        font-size: 1.1rem;
+        font-size: 1.2rem;
         margin-bottom: 0.5rem;
         color: var(--dark);
         font-weight: 600;
@@ -319,7 +260,7 @@
     .product-price {
         color: var(--primary);
         font-weight: 600;
-        font-size: 1.2rem;
+        font-size: 1.3rem;
         margin-bottom: 1rem;
     }
 
@@ -333,43 +274,11 @@
         border: none;
         cursor: pointer;
         transition: all 0.3s;
-        font-size: 0.9rem;
     }
 
     .add-to-cart:hover {
         background: #95a5a6;
         transform: translateY(-2px);
-    }
-
-    .sold-tag {
-        position: absolute;
-        top: 10px;
-        left: 10px;
-        background: #333;
-        color: white;
-        padding: 0.3rem 0.6rem;
-        border-radius: 4px;
-        font-size: 0.8rem;
-        font-weight: 600;
-    }
-
-    .buy-now-btn {
-        position: absolute;
-        bottom: 10px;
-        right: 10px;
-        background: var(--fiorello-red);
-        color: white;
-        padding: 0.5rem 0.8rem;
-        border-radius: 4px;
-        font-size: 0.8rem;
-        font-weight: 600;
-        border: none;
-        cursor: pointer;
-        transition: background 0.3s;
-    }
-
-    .buy-now-btn:hover {
-        background: #c0392b;
     }
 
     /* === CART MODAL === */
@@ -726,78 +635,50 @@
         }
         nav ul { gap: 1rem; }
         .hero {
-            flex-direction: column;
-            padding: 2rem 1rem;
+            padding: 3rem 1rem;
         }
-        .hero-content {
-            max-width: 100%;
-        }
-        .hero h2 { font-size: 2.2rem; }
+        .hero h1 { font-size: 2.5rem; }
         .products-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
         .contact-info { flex-direction: column; gap: 1rem; }
         .form-row { flex-direction: column; gap: 0; }
-        .category-filter {
-            flex-direction: column;
-            gap: 1rem;
-            padding: 1rem;
-        }
-        .category-list {
-            flex-wrap: wrap;
-            justify-content: center;
-        }
     }
 </style>
 </head>
 <body>
     <!-- Header -->
     <header>
-        <div class="logo">VINWO MV</div>
+        <div class="logo">Florist Home Page</div>
         <nav>
             <ul>
-                <li><a href="#home" class="active">HOME</a></li>
-                <li><a href="#products">SHOP</a></li>
-                <li><a href="#about">ABOUT</a></li>
-                <li><a href="#contact">CONTACT</a></li>
+                <li><a href="#home" class="active">Landing</a></li>
+                <li><a href="#home">Home</a></li>
+                <li><a href="#gallery">Gallery</a></li>
+                <li><a href="#products">Shop</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#contact">Contact</a></li>
+                <li><a href="#blog">Blog</a></li>
+                <li><a href="#" id="cartIcon"><i class="fas fa-shopping-cart"></i><span class="cart-count">0</span></a></li>
             </ul>
         </nav>
-        <div class="header-right">
-            <div class="search-icon"><i class="fas fa-search"></i></div>
-            <div class="cart-icon" id="cartIcon">
-                <i class="fas fa-shopping-cart"></i>
-                <span class="cart-count">0</span>
-            </div>
-        </div>
     </header>
 
     <!-- Hero Section -->
     <section class="hero" id="home">
         <div class="hero-content">
-            <h2>Send <span>flowers</span> like you mean it.</h2>
-            <p>Where flowers are our inspiration to create lasting memories. Whatever the occasion, our flowers will make it special cursus a sit amet mauris.</p>
-            <div class="signature">Sara</div>
-        </div>
-        <div class="hero-image">
-            <img src="imj.png" alt="Beautiful Pink Tulips">
+            <h1>Flower Shop</h1>
+            <p>Nulla tempus sollicitudin dui, ut vehicula lacus porta vel duis urna ligula luctus at feugiat a lacinia ut sem.</p>
+            <a href="#products" class="btn">SHOP NOW</a>
         </div>
     </section>
 
-    <!-- Category Filter -->
-    <div class="category-filter">
-        <ul class="category-list">
-            <li class="active">ALL</li>
-            <li>POPULAR</li>
-            <li>WINTER</li>
-            <li>VARIOUS</li>
-            <li>EXOTIC</li>
-            <li>GREENS</li>
-            <li>CACTUSES</li>
-        </ul>
-        <div class="filter-dropdown">FILTER ▼</div>
-    </div>
+    <!-- Our Specialties Section -->
+    <section class="specialties">
+        <h2 class="section-title">Our Specialties</h2>
+        <p class="specialties-text">Nulla tempus sollicitudin dui, ut vehicula lacus porta vel. Duis urna ligula, luctus at feugiat a lacinia ut sem. Quisque sit amet ipsum ac odio malesuada convallis.</p>
+    </section>
 
     <!-- Products Section -->
     <section class="products-container" id="products">
-        <h2 class="section-title">Our Bouquets</h2>
         <div class="products-grid" id="productsContainer">
             <!-- Products loaded from Supabase -->
         </div>
@@ -826,364 +707,4 @@
                 <span>Total:</span>
                 <span id="cartTotal">MVR0.00</span>
             </div>
-            <button class="btn checkout-btn" id="checkoutBtn">Proceed to Checkout</button>
-        </div>
-    </div>
-
-    <!-- Checkout Modal -->
-    <div class="checkout-modal" id="checkoutModal">
-        <div class="checkout-content">
-            <button class="checkout-close" id="closeCheckout">&times;</button>
-            <div class="checkout-header">
-                <h2>Checkout</h2>
-                <p>Please fill in your details to complete your order</p>
-            </div>
-            <form id="customerForm">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="customerName">Full Name *</label>
-                        <input type="text" id="customerName" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="customerPhone">Phone Number *</label>
-                        <input type="tel" id="customerPhone" required>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="customerEmail">Email Address *</label>
-                    <input type="email" id="customerEmail" required>
-                </div>
-                <div class="form-group">
-                    <label for="deliveryAddress">Delivery Address *</label>
-                    <textarea id="deliveryAddress" required></textarea>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="deliveryDate">Preferred Delivery Date</label>
-                        <input type="date" id="deliveryDate">
-                    </div>
-                    <div class="form-group">
-                        <label for="deliveryTime">Preferred Delivery Time</label>
-                        <select id="deliveryTime">
-                            <option value="">Any time</option>
-                            <option value="Morning (9AM-12PM)">Morning (9AM-12PM)</option>
-                            <option value="Afternoon (12PM-5PM)">Afternoon (12PM-5PM)</option>
-                            <option value="Evening (5PM-8PM)">Evening (5PM-8PM)</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="specialInstructions">Special Instructions</label>
-                    <textarea id="specialInstructions" placeholder="Any specific requests..."></textarea>
-                </div>
-                <div class="payment-details">
-                    <h3>Payment Information</h3>
-                    <p>Upload your payment slip below:</p>
-                    <div class="file-upload" id="paymentSlipUpload">
-                        <i class="fas fa-file-upload"></i>
-                        <p>Click to upload payment slip</p>
-                        <p class="file-name" id="fileName">No file selected</p>
-                        <input type="file" id="paymentSlip" accept="image/*">
-                    </div>
-                </div>
-                <div class="payment-details">
-                    <h3>Bank Transfer Details</h3>
-                    <p>Please transfer the total amount to the account below:</p>
-                    <div style="margin-top: 1rem;">
-                        <p><strong>Account Name:</strong> Abdulla Jailam</p>
-                        <p><strong>Account Number:</strong> 777488484848848</p>
-                        <p><em>After payment, upload your slip below.</em></p>
-                    </div>
-                </div>
-                <button type="submit" class="btn checkout-submit">Place Order</button>
-            </form>
-            <div class="success-message" id="successMessage">
-                <i class="fas fa-check-circle"></i>
-                <h3>Order Placed Successfully!</h3>
-                <p>Your order has been sent to the admin. You’ll be contacted shortly.</p>
-                <button class="btn" id="continueShopping">Continue Shopping</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Footer -->
-    <footer id="contact">
-        <div class="container">
-            <h2 class="section-title" style="color: white;">Contact Us</h2>
-            <div class="contact-info">
-                <div class="contact-item">
-                    <i class="fab fa-whatsapp"></i>
-                    <span>7995251</span>
-                </div>
-                <div class="contact-item">
-                    <i class="fas fa-envelope"></i>
-                    <span>info@vinwomv.com</span>
-                </div>
-                <div class="contact-item">
-                    <i class="fas fa-map-marker-alt"></i>
-                    <span>Flower Street, Maldives</span>
-                </div>
-            </div>
-            <p>&copy; 2025 Vinwo MV. All rights reserved.</p>
-        </div>
-    </footer>
-
-    <script>
-        // === FIXED SUPABASE CONFIGURATION ===
-        const supabaseUrl = 'https://bchygqpxmrovtetxwmrp.supabase.co';
-        const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjaHlncHF4bXJvdnRldHh3bXJwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAyMDE0MjgsImV4cCI6MjA3NTc3NzQyOH0.q-FPZb1yqHKBwmPQkJfly49UBNLMJToStsXwrwMVB-M';
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
-
-        // === UI Elements ===
-        let cart = [];
-        const cartIcon = document.getElementById('cartIcon');
-        const cartModal = document.getElementById('cartModal');
-        const closeCart = document.getElementById('closeCart');
-        const cartItems = document.getElementById('cartItems');
-        const cartTotal = document.getElementById('cartTotal');
-        const emptyCartMessage = document.getElementById('emptyCartMessage');
-        const checkoutBtn = document.getElementById('checkoutBtn');
-        const cartCount = document.querySelector('.cart-count');
-        const checkoutModal = document.getElementById('checkoutModal');
-        const closeCheckout = document.getElementById('closeCheckout');
-        const customerForm = document.getElementById('customerForm');
-        const successMessage = document.getElementById('successMessage');
-        const continueShopping = document.getElementById('continueShopping');
-        const paymentSlipUpload = document.getElementById('paymentSlipUpload');
-        const paymentSlip = document.getElementById('paymentSlip');
-        const fileName = document.getElementById('fileName');
-
-        // Modal controls
-        cartIcon.addEventListener('click', () => cartModal.style.display = 'flex');
-        closeCart.addEventListener('click', () => cartModal.style.display = 'none');
-        closeCheckout.addEventListener('click', () => checkoutModal.style.display = 'none');
-        window.addEventListener('click', e => {
-            if (e.target === cartModal) cartModal.style.display = 'none';
-            if (e.target === checkoutModal) checkoutModal.style.display = 'none';
-        });
-
-        continueShopping.addEventListener('click', () => {
-            checkoutModal.style.display = 'none';
-            successMessage.style.display = 'none';
-            customerForm.style.display = 'block';
-            customerForm.reset();
-            fileName.textContent = "No file selected";
-            cart = [];
-            updateCart();
-        });
-
-        paymentSlipUpload.addEventListener('click', () => paymentSlip.click());
-        paymentSlip.addEventListener('change', () => {
-            if (paymentSlip.files[0]) {
-                fileName.textContent = paymentSlip.files[0].name;
-            }
-        });
-
-        checkoutBtn.addEventListener('click', () => {
-            if (cart.length === 0) {
-                alert('Your cart is empty!');
-                return;
-            }
-            cartModal.style.display = 'none';
-            checkoutModal.style.display = 'flex';
-            successMessage.style.display = 'none';
-            customerForm.style.display = 'block';
-        });
-
-        // Cart functions
-        function updateCart() {
-            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-            cartCount.textContent = totalItems;
-            cartItems.innerHTML = '';
-
-            if (cart.length === 0) {
-                emptyCartMessage.style.display = 'block';
-                checkoutBtn.disabled = true;
-            } else {
-                emptyCartMessage.style.display = 'none';
-                checkoutBtn.disabled = false;
-                cart.forEach(item => {
-                    const el = document.createElement('div');
-                    el.className = 'cart-item';
-                    el.innerHTML = `
-                        <div class="item-info">
-                            <img src="${item.img}" alt="${item.name}" class="item-img">
-                            <div class="item-details">
-                                <h4>${item.name}</h4>
-                                <p>MVR${item.price.toFixed(2)}</p>
-                            </div>
-                        </div>
-                        <div class="item-controls">
-                            <button class="quantity-btn decrease" data-id="${item.id}">-</button>
-                            <span>${item.quantity}</span>
-                            <button class="quantity-btn increase" data-id="${item.id}">+</button>
-                            <button class="remove-item" data-id="${item.id}"><i class="fas fa-trash"></i></button>
-                        </div>
-                    `;
-                    cartItems.appendChild(el);
-                });
-
-                document.querySelectorAll('.decrease').forEach(btn => {
-                    btn.addEventListener('click', () => {
-                        const id = btn.dataset.id;
-                        const item = cart.find(i => i.id === id);
-                        if (item.quantity > 1) item.quantity--;
-                        else cart = cart.filter(i => i.id !== id);
-                        updateCart();
-                    });
-                });
-                document.querySelectorAll('.increase').forEach(btn => {
-                    btn.addEventListener('click', () => {
-                        const id = btn.dataset.id;
-                        const item = cart.find(i => i.id === id);
-                        item.quantity++;
-                        updateCart();
-                    });
-                });
-                document.querySelectorAll('.remove-item').forEach(btn => {
-                    btn.addEventListener('click', () => {
-                        const id = btn.dataset.id;
-                        cart = cart.filter(i => i.id !== id);
-                        updateCart();
-                    });
-                });
-            }
-
-            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            cartTotal.textContent = `MVR${total.toFixed(2)}`;
-        }
-
-        // Load products from Supabase
-        async function loadProducts() {
-            const { data, error } = await supabase
-                .from('products')
-                .select('*');
-
-            if (error) {
-                console.error('Error loading products:', error);
-                document.getElementById('productsContainer').innerHTML = '<p style="text-align:center;color:red;">Failed to load products. Check console.</p>';
-                return;
-            }
-
-            const container = document.getElementById('productsContainer');
-            container.innerHTML = '';
-
-            data.forEach(p => {
-                const card = document.createElement('div');
-                card.className = 'product-card';
-                card.innerHTML = `
-                    <div class="product-img-wrapper">
-                        <img src="${p.img}" alt="${p.name}" class="product-img">
-                        ${p.sold_out ? '<div class="sold-tag">Sold</div>' : ''}
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-title">${p.name}</h3>
-                        <p class="product-price">MVR${parseFloat(p.price).toFixed(2)}</p>
-                        <button class="btn add-to-cart" 
-                          data-id="${p.id}" 
-                          data-name="${p.name}" 
-                          data-price="${p.price}" 
-                          data-img="${p.img}">Add to Cart</button>
-                        <button class="buy-now-btn" data-id="${p.id}">BUY NOW</button>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
-
-            document.querySelectorAll('.add-to-cart').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const id = btn.dataset.id;
-                    const name = btn.dataset.name;
-                    const price = parseFloat(btn.dataset.price);
-                    const img = btn.dataset.img;
-                    const existing = cart.find(item => item.id === id);
-                    if (existing) existing.quantity++;
-                    else cart.push({ id, name, price, img, quantity: 1 });
-                    updateCart();
-                    cartModal.style.display = 'flex';
-                });
-            });
-
-            document.querySelectorAll('.buy-now-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const id = btn.dataset.id;
-                    const product = data.find(p => p.id === id);
-                    if (product) {
-                        const existing = cart.find(item => item.id === id);
-                        if (existing) existing.quantity++;
-                        else cart.push({ id: product.id, name: product.name, price: parseFloat(product.price), img: product.img, quantity: 1 });
-                        updateCart();
-                        cartModal.style.display = 'flex';
-                    }
-                });
-            });
-        }
-
-        // Submit order to Supabase
-        customerForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            let paymentSlipUrl = null;
-            const file = paymentSlip.files[0];
-            if (file) {
-                const filePath = `payment-slips/${Date.now()}_${file.name}`;
-                const { data, error } = await supabase.storage
-                    .from('payment-slips')
-                    .upload(filePath, file);
-
-                if (error) {
-                    alert('Failed to upload payment slip.');
-                    console.error('Upload error:', error);
-                    return;
-                }
-
-                // ✅ Get public URL correctly
-                const { data: { publicUrl } } = supabase.storage
-                    .from('payment-slips')
-                    .getPublicUrl(filePath);
-                paymentSlipUrl = publicUrl;
-            }
-
-            const newOrder = {
-                customer_name: customerName.value,
-                customer_phone: customerPhone.value,
-                customer_email: customerEmail.value,
-                delivery_address: deliveryAddress.value,
-                delivery_date: deliveryDate.value || null,
-                delivery_time: deliveryTime.value || null,
-                special_instructions: specialInstructions.value || null,
-                items: cart.map(i => ({
-                    id: i.id,
-                    name: i.name,
-                    price: i.price,
-                    quantity: i.quantity
-                })),
-                total: cart.reduce((sum, i) => sum + (i.price * i.quantity), 0),
-                payment_slip_url: paymentSlipUrl,
-                status: 'new'
-            };
-
-            const { error: orderError } = await supabase
-                .from('orders')
-                .insert([newOrder]);
-
-            if (orderError) {
-                console.error('Order error:', orderError);
-                alert('Failed to place order. Please try again.');
-                return;
-            }
-
-            // Show success
-            customerForm.style.display = 'none';
-            successMessage.style.display = 'block';
-            cart = [];
-            updateCart();
-        });
-
-        // Init
-        document.getElementById('deliveryDate').min = new Date().toISOString().split('T')[0];
-        loadProducts();
-        updateCart();
-    </script>
-</body>
-</html>
+            <button class="btn c
