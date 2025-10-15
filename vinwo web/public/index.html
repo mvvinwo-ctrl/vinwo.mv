@@ -1,710 +1,1952 @@
+web ok one
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vinwo MV - Flower Shop</title>
-    <!-- Fixed: Removed trailing spaces -->
+    <title>GoUmrah.mv – Maldives Umrah & Hajj Packages</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<style>
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-
-    :root {
-        --primary: #2c3e50;       /* Dark Blue */
-        --secondary: #bdc3c7;     /* Light Grey */
-        --accent: #3498db;        /* Blue */
-        --dark: #2c3e50;          /* Dark Blue */
-        --light: #ffffff;         /* White */
-        --card-bg: #ffffff;
-        --shadow: rgba(0, 0, 0, 0.05);
-        --florist-dark: #2c3e50;  /* Florist theme dark blue */
-        --florist-light: #f8f8f8; /* Light background for sections */
-    }
-
-    body {
-        background-color: var(--light);
-        color: var(--dark);
-        line-height: 1.6;
-    }
-
-    /* === HEADER === */
-    header {
-        background: white;
-        color: var(--dark);
-        padding: 1rem 2rem;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.03);
-        position: sticky;
-        top: 0;
-        z-index: 100;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .logo {
-        font-size: 1.4rem;
-        font-weight: 600;
-        letter-spacing: 0.5px;
-        color: var(--dark);
-    }
-
-    nav ul {
-        display: flex;
-        list-style: none;
-        gap: 1.5rem;
-        font-size: 0.9rem;
-        font-weight: 500;
-    }
-
-    nav a {
-        color: var(--dark);
-        text-decoration: none;
-        transition: color 0.3s;
-        position: relative;
-        padding-bottom: 4px;
-    }
-
-    nav a:hover,
-    nav a.active {
-        color: var(--primary);
-    }
-
-    nav a::after {
-        content: '';
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        width: 0;
-        height: 2px;
-        background: var(--primary);
-        transition: width 0.3s ease;
-    }
-
-    nav a:hover::after,
-    nav a.active::after {
-        width: 100%;
-    }
-
-    .cart-icon {
-        position: relative;
-        cursor: pointer;
-        font-size: 1.2rem;
-        color: var(--dark);
-        transition: transform 0.2s;
-    }
-
-    .cart-icon:hover {
-        transform: scale(1.1);
-    }
-
-    .cart-count {
-        position: absolute;
-        top: -8px;
-        right: -8px;
-        background: var(--primary);
-        color: white;
-        border-radius: 50%;
-        width: 20px;
-        height: 20px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        font-size: 0.8rem;
-        font-weight: bold;
-    }
-
-    /* === HERO SECTION === */
-    .hero {
-        background: url('imj.png') no-repeat center center;
-        background-size: cover;
-        color: white;
-        padding: 5rem 2rem;
-        position: relative;
-    }
-
-    .hero::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(44, 62, 80, 0.7); /* Dark overlay */
-        z-index: 1;
-    }
-
-    .hero-content {
-        max-width: 600px;
-        position: relative;
-        z-index: 2;
-    }
-
-    .hero h1 {
-        font-size: 3.5rem;
-        margin-bottom: 1rem;
-        font-weight: 700;
-        letter-spacing: -0.5px;
-        color: white;
-        font-family: 'Georgia', serif; /* Elegant serif font */
-    }
-
-    .hero p {
-        font-size: 1.1rem;
-        margin-bottom: 2rem;
-        color: #bdc3c7;
-        line-height: 1.8;
-    }
-
-    .btn {
-        display: inline-block;
-        background: #95a5a6;
-        color: white;
-        padding: 0.8rem 1.5rem;
-        border-radius: 30px;
-        text-decoration: none;
-        font-weight: 600;
-        transition: 0.3s;
-        border: none;
-        cursor: pointer;
-        font-size: 1.05rem;
-    }
-
-    .btn:hover {
-        background: #7f8c8d;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(44, 62, 80, 0.15);
-    }
-
-    /* === SPECIALTIES SECTION === */
-    .specialties {
-        background: var(--florist-light);
-        padding: 4rem 2rem;
-        text-align: center;
-    }
-
-    .section-title {
-        font-size: 2.2rem;
-        font-weight: 700;
-        color: var(--dark);
-        margin-bottom: 1rem;
-        position: relative;
-    }
-
-    .section-title:after {
-        content: '';
-        display: block;
-        width: 40px;
-        height: 4px;
-        background: var(--primary);
-        margin: 10px auto;
-        border-radius: 2px;
-    }
-
-    .specialties-text {
-        max-width: 800px;
-        margin: 0 auto;
-        font-size: 1.1rem;
-        color: #666;
-        line-height: 1.8;
-    }
-
-    /* === PRODUCTS SECTION === */
-    .products-container {
-        max-width: 1200px;
-        margin: 3rem auto;
-        padding: 0 2rem;
-    }
-
-    .products-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-        gap: 2rem;
-    }
-
-    .product-card {
-        background: var(--card-bg);
-        border-radius: 8px;
-        overflow: hidden;
-        box-shadow: 0 4px 16px var(--shadow);
-        transition: 0.3s;
-    }
-
-    .product-card:hover {
-        transform: translateY(-6px);
-        box-shadow: 0 8px 24px rgba(0,0,0,0.05);
-    }
-
-    .product-img {
-        height: 200px;
-        width: 100%;
-        object-fit: cover;
-    }
-
-    .product-info {
-        padding: 1.5rem;
-    }
-
-    .product-title {
-        font-size: 1.2rem;
-        margin-bottom: 0.5rem;
-        color: var(--dark);
-        font-weight: 600;
-    }
-
-    .product-price {
-        color: var(--primary);
-        font-weight: 600;
-        font-size: 1.3rem;
-        margin-bottom: 1rem;
-    }
-
-    .add-to-cart {
-        width: 100%;
-        background: var(--secondary);
-        color: var(--dark);
-        font-weight: 600;
-        padding: 0.8rem;
-        border-radius: 6px;
-        border: none;
-        cursor: pointer;
-        transition: all 0.3s;
-    }
-
-    .add-to-cart:hover {
-        background: #95a5a6;
-        transform: translateY(-2px);
-    }
-
-    /* === CART MODAL === */
-    .modal {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0,0,0,0.4);
-        z-index: 1000;
-        justify-content: center;
-        align-items: center;
-    }
-
-    .modal-content {
-        background: white;
-        width: 90%;
-        max-width: 600px;
-        border-radius: 16px;
-        padding: 2rem;
-        max-height: 90vh;
-        overflow-y: auto;
-        position: relative;
-        box-shadow: 0 8px 32px rgba(0,0,0,0.05);
-    }
-
-    .close-modal {
-        position: absolute;
-        top: 15px;
-        right: 15px;
-        background: none;
-        border: none;
-        font-size: 1.5rem;
-        cursor: pointer;
-        color: var(--dark);
-        opacity: 0.7;
-        transition: opacity 0.2s;
-    }
-
-    .close-modal:hover {
-        opacity: 1;
-    }
-
-    .modal-header {
-        margin-bottom: 1.5rem;
-        padding-bottom: 1rem;
-        border-bottom: 1px solid #eee;
-    }
-
-    .modal-header h2 {
-        font-size: 1.6rem;
-        color: var(--dark);
-    }
-
-    .cart-items {
-        margin-bottom: 1.5rem;
-    }
-
-    .cart-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 1rem 0;
-        border-bottom: 1px solid #eee;
-    }
-
-    .item-info {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-    }
-
-    .item-img {
-        width: 60px;
-        height: 60px;
-        object-fit: cover;
-        border-radius: 8px;
-    }
-
-    .item-details h4 {
-        margin-bottom: 0.3rem;
-        color: var(--dark);
-    }
-
-    .item-controls {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-
-    .quantity-btn {
-        background: #f0f0f0;
-        border: none;
-        width: 30px;
-        height: 30px;
-        border-radius: 50%;
-        cursor: pointer;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        font-weight: bold;
-        color: var(--dark);
-        transition: background 0.2s;
-    }
-
-    .quantity-btn:hover {
-        background: #e0e0e0;
-    }
-
-    .remove-item {
-        color: #ff6b6b;
-        background: none;
-        border: none;
-        cursor: pointer;
-        margin-left: 1rem;
-        font-size: 1.1rem;
-    }
-
-    .cart-total {
-        display: flex;
-        justify-content: space-between;
-        font-size: 1.2rem;
-        font-weight: 600;
-        margin-bottom: 1.5rem;
-        padding-top: 1rem;
-        border-top: 2px solid #eee;
-        color: var(--dark);
-    }
-
-    .checkout-btn {
-        width: 100%;
-        background: var(--primary);
-        color: white;
-        padding: 0.8rem;
-        border-radius: 8px;
-        border: none;
-        cursor: pointer;
-        font-weight: 600;
-        margin-top: 1rem;
-        transition: background 0.3s, transform 0.2s;
-    }
-
-    .checkout-btn:hover {
-        background: #1a252c;
-        transform: translateY(-2px);
-    }
-
-    /* === CHECKOUT MODAL === */
-    .checkout-modal {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0,0,0,0.4);
-        z-index: 1000;
-        justify-content: center;
-        align-items: center;
-    }
-
-    .checkout-content {
-        background: white;
-        width: 90%;
-        max-width: 600px;
-        border-radius: 16px;
-        padding: 2rem;
-        max-height: 90vh;
-        overflow-y: auto;
-        position: relative;
-        box-shadow: 0 8px 32px rgba(0,0,0,0.05);
-    }
-
-    .checkout-close {
-        position: absolute;
-        top: 15px;
-        right: 15px;
-        background: none;
-        border: none;
-        font-size: 1.5rem;
-        cursor: pointer;
-        color: var(--dark);
-        opacity: 0.7;
-        transition: opacity 0.2s;
-    }
-
-    .checkout-close:hover {
-        opacity: 1;
-    }
-
-    .checkout-header {
-        margin-bottom: 1.5rem;
-        padding-bottom: 1rem;
-        border-bottom: 1px solid #eee;
-    }
-
-    .checkout-header h2 {
-        font-size: 1.6rem;
-        color: var(--dark);
-    }
-
-    .form-group {
-        margin-bottom: 1.5rem;
-    }
-
-    .form-group label {
-        display: block;
-        margin-bottom: 0.5rem;
-        font-weight: 500;
-        color: var(--dark);
-    }
-
-    .form-group input,
-    .form-group textarea,
-    .form-group select {
-        width: 100%;
-        padding: 0.8rem;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        font-size: 1rem;
-        background: #fafafa;
-        transition: border 0.3s, box-shadow 0.3s;
-    }
-
-    .form-group input:focus,
-    .form-group textarea:focus,
-    .form-group select:focus {
-        outline: none;
-        border-color: var(--primary);
-        box-shadow: 0 0 0 3px rgba(44, 62, 80, 0.1);
-    }
-
-    .form-group textarea {
-        min-height: 100px;
-        resize: vertical;
-    }
-
-    .form-row {
-        display: flex;
-        gap: 1rem;
-    }
-
-    .form-row .form-group {
-        flex: 1;
-    }
-
-    .checkout-submit {
-        width: 100%;
-        background: var(--primary);
-        color: white;
-        padding: 0.8rem;
-        border-radius: 8px;
-        border: none;
-        cursor: pointer;
-        font-weight: 600;
-        margin-top: 1rem;
-        transition: background 0.3s, transform 0.2s;
-    }
-
-    .checkout-submit:hover {
-        background: #1a252c;
-        transform: translateY(-2px);
-    }
-
-    .payment-details {
-        background: #f8f8f8;
-        border-radius: 12px;
-        padding: 1.5rem;
-        margin: 1.5rem 0;
-        border-left: 4px solid var(--primary);
-    }
-
-    .payment-details h3 {
-        margin-bottom: 1rem;
-        color: var(--dark);
-        font-size: 1.2rem;
-    }
-
-    .file-upload {
-        border: 2px dashed #ddd;
-        border-radius: 12px;
-        padding: 2rem;
-        text-align: center;
-        margin: 1rem 0;
-        cursor: pointer;
-        transition: 0.3s;
-        background: #fafafa;
-    }
-
-    .file-upload:hover {
-        border-color: var(--primary);
-        background: #f0f7f0;
-    }
-
-    .file-upload i {
-        font-size: 2rem;
-        color: var(--primary);
-        margin-bottom: 1rem;
-    }
-
-    .file-upload input {
-        display: none;
-    }
-
-    .file-name {
-        margin-top: 1rem;
-        font-style: italic;
-        color: #666;
-    }
-
-    .success-message {
-        display: none;
-        text-align: center;
-        padding: 2rem;
-        background: #e8f5e9;
-        border-radius: 12px;
-        margin-top: 1rem;
-    }
-
-    .success-message i {
-        font-size: 3rem;
-        color: #4caf50;
-        margin-bottom: 1rem;
-    }
-
-    /* === FOOTER === */
-    footer {
-        background: var(--dark);
-        color: white;
-        text-align: center;
-        padding: 2rem 1rem;
-        margin-top: 3rem;
-    }
-
-    .contact-info {
-        display: flex;
-        justify-content: center;
-        gap: 2rem;
-        margin: 1.5rem 0;
-    }
-
-    .contact-item {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-
-    @media (max-width: 768px) {
-        .header-content {
-            flex-direction: column;
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@700&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0d3b2a;
+            --primary-dark: #082a1d;
+            --secondary: #c9a75e;
+            --light: #fdfdfd;
+            --dark: #2e2e2e;
+            --gray: #6c757d;
+            --accent-bg: #f8f9f5;
+            --card-shadow: 0 6px 20px rgba(0,0,0,0.08);
+            --card-hover: 0 12px 28px rgba(0,0,0,0.12);
+            --pattern-color: rgba(255, 255, 255, 0.03);
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Tajawal', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.7;
+            color: var(--dark);
+            background-color: var(--light);
+            overflow-x: hidden;
+        }
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 1rem 5%;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-family: 'Amiri', serif;
+        }
+        .logo i {
+            font-size: 2rem;
+            color: var(--secondary);
+        }
+        .logo h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+        nav ul {
+            display: flex;
+            list-style: none;
+        }
+        nav ul li {
+            margin-left: 1.8rem;
+        }
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+            padding: 0.6rem 0;
+            position: relative;
+        }
+        nav ul li a:hover {
+            color: var(--secondary);
+        }
+        nav ul li a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: var(--secondary);
+            transition: width 0.3s;
+        }
+        nav ul li a:hover::after {
+            width: 100%;
+        }
+        .auth-buttons {
+            display: flex;
             gap: 1rem;
         }
-        nav ul { gap: 1rem; }
-        .hero {
-            padding: 3rem 1rem;
+        .btn {
+            display: inline-block;
+            background-color: var(--secondary);
+            color: var(--primary-dark);
+            padding: 0.7rem 1.5rem;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-family: 'Tajawal', sans-serif;
+            min-height: 44px;
         }
-        .hero h1 { font-size: 2.5rem; }
-        .products-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
-        .contact-info { flex-direction: column; gap: 1rem; }
-        .form-row { flex-direction: column; gap: 0; }
-    }
-</style>
+        .btn:hover {
+            background-color: #b8944a;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--secondary);
+            color: var(--secondary);
+        }
+        .btn-outline:hover {
+            background: var(--secondary);
+            color: var(--primary-dark);
+        }
+        .mobile-menu {
+            display: none;
+            font-size: 1.6rem;
+            cursor: pointer;
+            color: white;
+        }
+        .hero {
+            background: url('img5.jpg') center/cover no-repeat;
+            color: rgb(255, 239, 239);
+            text-align: center;
+            padding: 6rem 1.5rem;
+            position: relative;
+        }
+        .hero-content {
+            position: relative;
+            z-index: 2;
+        }
+        .hero h2 {
+            font-size: 2.6rem;
+            margin-bottom: 1.2rem;
+            font-family: 'Amiri', serif;
+            letter-spacing: 0.5px;
+        }
+        .hero p {
+            font-size: 1.25rem;
+            max-width: 700px;
+            margin: 0 auto 2rem;
+            opacity: 0.95;
+        }
+        .tabs {
+            background-color: white;
+            padding: 1.2rem 5%;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .tabs-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: center;
+            gap: 1.2rem;
+            flex-wrap: wrap;
+        }
+        .tab-btn {
+            padding: 0.7rem 1.8rem;
+            background: none;
+            border: none;
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--gray);
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+            border-radius: 8px 8px 0 0;
+            min-height: 44px;
+        }
+        .tab-btn.active {
+            color: var(--primary);
+            border-bottom: 3px solid var(--secondary);
+            background-color: rgba(201, 167, 94, 0.08);
+        }
+        .filters {
+            background-color: var(--accent-bg);
+            padding: 1.8rem 5%;
+        }
+        .filter-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.2rem;
+            justify-content: center;
+        }
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            min-width: 180px;
+        }
+        .filter-group label {
+            margin-bottom: 0.6rem;
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 0.95rem;
+        }
+        .filter-group select,
+        .filter-group input {
+            padding: 0.75rem;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-family: inherit;
+            background: white;
+        }
+        .groups-section,
+        .agencies-section {
+            padding: 3.5rem 5%;
+        }
+        .section-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .section-header h2 {
+            color: var(--primary);
+            font-size: 2.1rem;
+            margin-bottom: 0.7rem;
+            font-family: 'Amiri', serif;
+        }
+        .section-header p {
+            color: var(--gray);
+            max-width: 650px;
+            margin: 0 auto;
+        }
+        .groups-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 2.2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .group-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            transition: transform 0.35s, box-shadow 0.35s;
+        }
+        .group-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--card-hover);
+        }
+        .group-image {
+            height: 210px;
+            background-size: cover;
+            background-position: center;
+            background-color: #f0f0f0;
+        }
+        .group-content {
+            padding: 1.6rem;
+        }
+        .group-title {
+            font-size: 1.35rem;
+            color: var(--primary);
+            margin-bottom: 0.4rem;
+        }
+        .group-agent {
+            color: var(--gray);
+            font-size: 0.92rem;
+            margin-bottom: 0.8rem;
+        }
+        .group-price {
+            background: var(--secondary);
+            color: var(--primary-dark);
+            padding: 0.35rem 0.9rem;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 1.05rem;
+        }
+        .group-details {
+            display: flex;
+            gap: 1.2rem;
+            margin: 1rem 0;
+            font-size: 0.95rem;
+        }
+        .group-detail i {
+            color: var(--primary);
+            margin-right: 0.4rem;
+        }
+        .group-description {
+            color: var(--gray);
+            margin: 1rem 0;
+            font-size: 0.98rem;
+            line-height: 1.6;
+        }
+        .group-features {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            margin: 1.2rem 0;
+        }
+        .feature {
+            background: #f0f7f0;
+            color: var(--primary);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .card-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 1.2rem;
+        }
+        .agencies-section {
+            background-color: #fafafa;
+        }
+        .agencies-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .agency-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.8rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.06);
+            transition: transform 0.3s;
+            min-height: 44px;
+        }
+        .agency-card:hover {
+            transform: translateY(-6px);
+        }
+        .agency-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.2rem;
+        }
+        .agency-icon {
+            width: 55px;
+            height: 55px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.6rem;
+        }
+        .agency-name {
+            font-size: 1.25rem;
+            color: var(--primary);
+        }
+        .agency-detail {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.7rem;
+            margin-bottom: 0.8rem;
+            font-size: 0.95rem;
+        }
+        .agency-detail i {
+            color: var(--secondary);
+            margin-top: 0.2rem;
+        }
+        footer {
+            background: var(--primary-dark);
+            color: #e0e0e0;
+            padding: 3.5rem 5% 2rem;
+        }
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2.2rem;
+            margin-bottom: 2rem;
+        }
+        .footer-column h3 {
+            color: var(--secondary);
+            margin-bottom: 1.4rem;
+            font-size: 1.3rem;
+            font-family: 'Amiri', serif;
+        }
+        .footer-column p {
+            line-height: 1.7;
+            margin-bottom: 1.2rem;
+        }
+        .footer-column ul {
+            list-style: none;
+        }
+        .footer-column ul li {
+            margin-bottom: 0.9rem;
+        }
+        .footer-column ul li a {
+            color: #ccc;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        .footer-column ul li a:hover {
+            color: var(--secondary);
+        }
+        .social-links {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.2rem;
+        }
+        .social-links a {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            transition: all 0.3s;
+        }
+        .social-links a:hover {
+            background: var(--secondary);
+            transform: translateY(-2px);
+        }
+        .copyright {
+            text-align: center;
+            padding-top: 1.8rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            color: #aaa;
+            font-size: 0.95rem;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 2000;
+            overflow-y: auto;
+        }
+        .modal-content {
+            background: white;
+            margin: 3rem auto;
+            width: 92%;
+            max-width: 750px;
+            border-radius: 14px;
+            animation: modalFade 0.4s ease;
+        }
+        @keyframes modalFade {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .modal-header {
+            padding: 1.6rem;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-header h3 {
+            color: var(--primary);
+            font-family: 'Amiri', serif;
+        }
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: var(--gray);
+        }
+        .modal-body {
+            padding: 1.8rem;
+        }
+        .form-group {
+            margin-bottom: 1.6rem;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.6rem;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 0.9rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 1rem;
+        }
+        .form-group input[type="checkbox"] {
+            width: auto;
+            margin-right: 0.5rem;
+        }
+        .form-group .otp-inputs {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        .form-group .otp-inputs input {
+            width: 40px;
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        .btn-full {
+            width: 100%;
+        }
+        .auth-card {
+            max-width: 480px;
+            border-radius: 28px;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(13, 59, 42, 0.3);
+            background: white;
+        }
+        .auth-header {
+            padding: 2.2rem;
+            text-align: center;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            position: relative;
+        }
+        .auth-header h3 {
+            font-family: 'Amiri', serif;
+            font-size: 1.8rem;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.8rem;
+        }
+        .auth-header p {
+            margin-top: 0.4rem;
+            opacity: 0.9;
+            font-size: 0.95rem;
+        }
+        .auth-body {
+            padding: 2.4rem;
+        }
+        .auth-input-group {
+            position: relative;
+            margin-bottom: 1.6rem;
+        }
+        .auth-input-group i {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray);
+            font-size: 1.1rem;
+        }
+        .auth-input {
+            width: 100%;
+            padding: 1.1rem 1.1rem 1.1rem 50px;
+            border: 1px solid #e0e0e0;
+            border-radius: 16px;
+            font-size: 1rem;
+            transition: all 0.3s;
+            background: #fafafa;
+        }
+        .auth-input:focus {
+            outline: none;
+            border-color: var(--secondary);
+            background: white;
+            box-shadow: 0 0 0 3px rgba(201, 167, 94, 0.15);
+        }
+        .auth-label {
+            position: absolute;
+            left: 50px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray);
+            pointer-events: none;
+            transition: 0.3s;
+            font-size: 0.95rem;
+        }
+        .auth-input:focus + .auth-label,
+        .auth-input:not(:placeholder-shown) + .auth-label {
+            top: 12px;
+            font-size: 0.8rem;
+            color: var(--primary);
+        }
+        .auth-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 1.4rem 0;
+            font-size: 0.95rem;
+        }
+        .auth-footer a {
+            color: var(--secondary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .auth-divider {
+            text-align: center;
+            position: relative;
+            margin: 1.8rem 0;
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+        .auth-divider::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #eee;
+            z-index: 1;
+        }
+        .auth-divider span {
+            background: white;
+            padding: 0 12px;
+            position: relative;
+            z-index: 2;
+        }
+        .auth-toggle {
+            text-align: center;
+            margin-top: 1.6rem;
+            font-size: 0.95rem;
+            color: var(--gray);
+        }
+        .auth-toggle a {
+            color: var(--secondary);
+            font-weight: 700;
+            text-decoration: none;
+        }
+        .whatsapp-float {
+            position: fixed;
+            width: 60px;
+            height: 60px;
+            bottom: 30px;
+            right: 30px;
+            background-color: #25d366;
+            color: white;
+            border-radius: 50px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            z-index: 3000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            text-decoration: none;
+            transition: transform 0.3s;
+        }
+        .whatsapp-float:hover {
+            transform: scale(1.1);
+        }
+        @media (max-width: 768px) {
+            nav ul {
+                display: none;
+                flex-direction: column;
+                position: absolute;
+                top: 70px;
+                left: 0;
+                width: 100%;
+                background: var(--primary);
+                padding: 1.2rem 0;
+            }
+            nav ul.show {
+                display: flex;
+            }
+            nav ul li {
+                margin: 0;
+                padding: 0.9rem 0;
+                text-align: center;
+            }
+            .mobile-menu {
+                display: block;
+            }
+            .hero h2 {
+                font-size: 2.1rem;
+            }
+            .hero p {
+                font-size: 1.1rem;
+            }
+            .groups-grid,
+            .agencies-grid {
+                grid-template-columns: 1fr;
+            }
+            .filter-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .filter-group {
+                max-width: 100%;
+            }
+            .filter-group input,
+            .filter-group select {
+                width: 100%;
+            }
+            .auth-buttons {
+                display: none;
+            }
+        }
+        @media (max-width: 500px) {
+            .modal-content,
+            .auth-card {
+                width: 95%;
+                margin: 2rem auto;
+            }
+            .auth-body,
+            .auth-header {
+                padding: 1.6rem;
+            }
+            .form-group input,
+            .form-group select,
+            .form-group textarea,
+            .auth-input {
+                font-size: 1rem;
+            }
+            .hero h2 {
+                font-size: 1.8rem;
+                padding: 0 1rem;
+            }
+            .hero p {
+                font-size: 1rem;
+                padding: 0 1rem;
+            }
+            .btn {
+                padding: 0.6rem 1.2rem;
+                font-size: 0.95rem;
+            }
+        }
+        @media (max-width: 480px) {
+            .tab-btn {
+                padding: 0.6rem 1.2rem;
+                font-size: 1rem;
+            }
+        }
+    </style>
 </head>
 <body>
-    <!-- Header -->
     <header>
-        <div class="logo">Florist Home Page</div>
-        <nav>
-            <ul>
-                <li><a href="#home" class="active">Landing</a></li>
-                <li><a href="#home">Home</a></li>
-                <li><a href="#gallery">Gallery</a></li>
-                <li><a href="#products">Shop</a></li>
-                <li><a href="#about">About</a></li>
-                <li><a href="#contact">Contact</a></li>
-                <li><a href="#blog">Blog</a></li>
-                <li><a href="#" id="cartIcon"><i class="fas fa-shopping-cart"></i><span class="cart-count">0</span></a></li>
-            </ul>
-        </nav>
+        <div class="header-container">
+            <div class="logo">
+                <i class="fas fa-kaaba"></i>
+                <h1>GoUmrah.mv</h1>
+            </div>
+            <div class="mobile-menu">
+                <i class="fas fa-bars"></i>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#umrah">Umrah</a></li>
+                    <li><a href="#hajj">Hajj</a></li>
+                    <li><a href="#agencies">Agencies</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+            </nav>
+            <div class="auth-buttons" id="auth-buttons">
+                <button class="btn btn-outline" id="login-btn">Login</button>
+                <button class="btn" id="register-btn">Register</button>
+            </div>
+            <div class="auth-buttons" id="logout-button" style="display: none;">
+                <button class="btn" id="logout-btn">Logout</button>
+            </div>
+        </div>
     </header>
-
-    <!-- Hero Section -->
     <section class="hero" id="home">
         <div class="hero-content">
-            <h1>Flower Shop</h1>
-            <p>Nulla tempus sollicitudin dui, ut vehicula lacus porta vel duis urna ligula luctus at feugiat a lacinia ut sem.</p>
-            <a href="#products" class="btn">SHOP NOW</a>
+            <h2>Begin Your Sacred Journey with GoUmrah.mv</h2>
+            <p>Trusted Umrah & Hajj packages from the Maldives — with care, authenticity, and spiritual guidance.</p>
+            <a href="#umrah" class="btn">Explore Packages</a>
         </div>
     </section>
-
-    <!-- Our Specialties Section -->
-    <section class="specialties">
-        <h2 class="section-title">Our Specialties</h2>
-        <p class="specialties-text">Nulla tempus sollicitudin dui, ut vehicula lacus porta vel. Duis urna ligula, luctus at feugiat a lacinia ut sem. Quisque sit amet ipsum ac odio malesuada convallis.</p>
-    </section>
-
-    <!-- Products Section -->
-    <section class="products-container" id="products">
-        <div class="products-grid" id="productsContainer">
-            <!-- Products loaded from Supabase -->
+    <section class="tabs">
+        <div class="tabs-container">
+            <button class="tab-btn active" data-tab="umrah">Umrah Packages</button>
+            <button class="tab-btn" data-tab="hajj">Hajj Packages</button>
+            <button class="tab-btn" data-tab="agencies">Travel Agencies</button>
         </div>
     </section>
-
-    <!-- About Section -->
-    <section class="container" id="about">
-        <h2 class="section-title">About Vinwo MV</h2>
-        <div style="text-align: center; max-width: 800px; margin: 0 auto;">
-            <p>Vinwo MV is dedicated to creating beautiful, handcrafted flower bouquets for all your special occasions.</p>
-            <p>We source the freshest flowers and work with skilled florists to ensure every bouquet is a work of art.</p>
+    <section class="filters">
+        <div class="filter-container">
+            <div class="filter-group">
+                <label for="departure-date">Departure Month</label>
+                <input type="month" id="departure-date">
+            </div>
+            <div class="filter-group">
+                <label for="duration">Duration</label>
+                <select id="duration">
+                    <option value="all">All Durations</option>
+                    <option value="7">7 Days</option>
+                    <option value="10">10 Days</option>
+                    <option value="14">14 Days</option>
+                    <option value="21">21+ Days</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="price-range">Price Range</label>
+                <select id="price-range">
+                    <option value="all">All Prices</option>
+                    <option value="low">Under MVR 30,000</option>
+                    <option value="medium">MVR 30k – 50k</option>
+                    <option value="high">Over MVR 50,000</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="package-type">Package Type</label>
+                <select id="package-type">
+                    <option value="all">All Types</option>
+                    <option value="standard">Standard</option>
+                    <option value="premium">Premium</option>
+                    <option value="vip">VIP</option>
+                </select>
+            </div>
         </div>
     </section>
-
-    <!-- Cart Modal -->
-    <div class="modal" id="cartModal">
+    <section class="groups-section" id="umrah">
+        <div class="section-header">
+            <h2>Umrah Packages from Maldives</h2>
+            <p>Handpicked spiritual journeys with trusted local agencies</p>
+        </div>
+        <div class="groups-grid" id="umrah-container">
+            <div class="loading">Loading packages...</div>
+        </div>
+    </section>
+    <section class="groups-section" id="hajj" style="display: none;">
+        <div class="section-header">
+            <h2>Hajj 1446H (2025) Packages</h2>
+            <p>Official, Ministry-approved Hajj services for Maldivian pilgrims</p>
+        </div>
+        <div class="groups-grid" id="hajj-container"></div>
+    </section>
+    <section class="agencies-section" id="agencies" style="display: none;">
+        <div class="agencies-container">
+            <div class="section-header">
+                <h2>Authorized Travel Agencies</h2>
+                <p>All listed agencies are approved by the Ministry of Islamic Affairs, Maldives</p>
+            </div>
+            <div class="agencies-grid" id="agencies-container"></div>
+        </div>
+    </section>
+    <footer id="contact">
+        <div class="footer-container">
+            <div class="footer-column">
+                <h3>GoUmrah.mv</h3>
+                <p>Your trusted partner for sacred journeys to the Holy Cities. Serving Maldivian pilgrims with integrity, care, and Islamic values.</p>
+                <div class="social-links">
+                    <a href="#"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="https://wa.me/9607995251?text=Hello%20GoUmrah.mv,%20I%20need%20help%20with%20my%20Umrah%20booking." target="_blank"><i class="fab fa-whatsapp"></i></a>
+                </div>
+            </div>
+            <div class="footer-column">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#umrah">Umrah Packages</a></li>
+                    <li><a href="#hajj">Hajj Packages</a></li>
+                    <li><a href="#agencies">Agencies</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h3>Contact Us</h3>
+                <ul>
+                    <li><i class="fas fa-map-marker-alt"></i> Male', Republic of Maldives</li>
+                    <li><i class="fas fa-phone"></i> +9607995251</li>
+                    <li><i class="fas fa-envelope"></i> info@goumrah.mv</li>
+                    <li><i class="fas fa-clock"></i> Sunday–Thursday: 9AM – 5PM</li>
+                </ul>
+            </div>
+        </div>
+        <div class="copyright">
+            <p>&copy; 2025 GoUmrah.mv – All Rights Reserved</p>
+        </div>
+    </footer>
+    <a href="https://wa.me/9607995251?text=Hello%20GoUmrah.mv!%20I%20have%20a%20question%20about%20Umrah%20packages." class="whatsapp-float" target="_blank">
+        <i class="fab fa-whatsapp"></i>
+    </a>
+    <!-- Modals -->
+    <div class="modal" id="login-modal">
+        <div class="modal-content auth-card">
+            <div class="auth-header">
+                <h3><i class="fas fa-door-open"></i> Welcome Back</h3>
+                <p>Sign in to continue your sacred journey</p>
+                <button class="close-modal" style="position: absolute; top: 1.3rem; right: 1.3rem; background: rgba(255,255,255,0.2); width: 36px; height: 36px; border-radius: 50%; color: white; border: none; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; cursor: pointer;">&times;</button>
+            </div>
+            <div class="auth-body">
+                <form id="login-form">
+                    <div class="auth-input-group">
+                        <i class="fas fa-envelope"></i>
+                        <input type="text" id="login-email" class="auth-input" placeholder=" " required>
+                        <label class="auth-label">Email or Phone</label>
+                    </div>
+                    <div class="auth-input-group">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="login-password" class="auth-input" placeholder=" " required>
+                        <label class="auth-label">Password</label>
+                    </div>
+                    <div class="auth-footer">
+                        <label style="display: flex; align-items: center; gap: 0.5rem;">
+                            <input type="checkbox" id="remember-me" style="width: auto;">
+                            <span>Remember me</span>
+                        </label>
+                        <a href="#">Forgot password?</a>
+                    </div>
+                    <button type="submit" class="btn btn-full" style="padding: 1rem; font-weight: 700; border-radius: 16px;">Sign In</button>
+                    <div class="auth-divider"><span>or</span></div>
+                    <div class="auth-toggle">
+                        Don't have an account? <a href="#" id="switch-to-register">Create one</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="modal" id="register-modal">
+        <div class="modal-content" style="max-width: 520px; border-radius: 24px; overflow: hidden; box-shadow: 0 20px 50px rgba(13, 59, 42, 0.25);">
+            <div style="background: linear-gradient(135deg, var(--primary), var(--primary-dark)); padding: 2.2rem; text-align: center; color: white; position: relative;">
+                <h3 style="font-family: 'Amiri', serif; font-size: 1.8rem; margin: 0; display: flex; align-items: center; justify-content: center; gap: 0.7rem;">
+                    <i class="fas fa-user-plus" style="color: var(--secondary);"></i> Create Your Account
+                </h3>
+                <p style="margin-top: 0.4rem; opacity: 0.9; font-size: 0.95rem;">Join thousands of pilgrims on their sacred journey</p>
+                <button class="close-modal" style="position: absolute; top: 1.3rem; right: 1.3rem; background: rgba(255,255,255,0.15); width: 34px; height: 34px; border-radius: 50%; color: white; border: none; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; cursor: pointer;">&times;</button>
+            </div>
+            <div style="padding: 2.4rem;">
+                <form id="register-form">
+                    <div class="form-group" style="margin-bottom: 1.5rem;">
+                        <div style="position: relative;">
+                            <i class="fas fa-user" style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--gray);"></i>
+                            <input type="text" id="reg-name" class="auth-input" placeholder=" " style="width: 100%; padding: 1.1rem 1.1rem 1.1rem 48px; border: 1px solid #e0e0e0; border-radius: 14px; font-size: 1rem; background: #fafafa; transition: all 0.3s;" required>
+                            <label for="reg-name" class="auth-label">Full Name (as in Passport)</label>
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 1.5rem;">
+                        <div style="position: relative;">
+                            <i class="fas fa-envelope" style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--gray);"></i>
+                            <input type="email" id="reg-email" class="auth-input" placeholder=" " style="width: 100%; padding: 1.1rem 1.1rem 1.1rem 48px; border: 1px solid #e0e0e0; border-radius: 14px; font-size: 1rem; background: #fafafa; transition: all 0.3s;" required>
+                            <label for="reg-email" class="auth-label">Email Address</label>
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 1.5rem;">
+                        <div style="position: relative;">
+                            <i class="fas fa-phone" style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--gray);"></i>
+                            <input type="tel" id="reg-phone" class="auth-input" placeholder=" " style="width: 100%; padding: 1.1rem 1.1rem 1.1rem 48px; border: 1px solid #e0e0e0; border-radius: 14px; font-size: 1rem; background: #fafafa; transition: all 0.3s;" required>
+                            <label for="reg-phone" class="auth-label">Phone (+960)</label>
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 1.5rem;">
+                        <div style="position: relative;">
+                            <i class="fas fa-users" style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--gray);"></i>
+                            <select id="reg-travel-type" class="auth-input" style="width: 100%; padding: 1.1rem 1.1rem 1.1rem 48px; border: 1px solid #e0e0e0; border-radius: 14px; font-size: 1rem; background: white; appearance: none; background-image: url('data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' fill=\'%236c757d\' viewBox=\'0 0 16 16\'%3E%3Cpath d=\'M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.414 0z\'/%3E%3C/svg%3E'); background-repeat: no-repeat; background-position: right 1rem center;" required>
+                                <option value=""></option>
+                                <option value="individual">Myself Only</option>
+                                <option value="family">Family (Spouse & Children)</option>
+                                <option value="group">Group (Friends or Others)</option>
+                            </select>
+                            <label for="reg-travel-type" class="auth-label">Traveling With</label>
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 1.5rem;">
+                        <div style="position: relative;">
+                            <i class="fas fa-lock" style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--gray);"></i>
+                            <input type="password" id="reg-password" class="auth-input" placeholder=" " style="width: 100%; padding: 1.1rem 1.1rem 1.1rem 48px; border: 1px solid #e0e0e0; border-radius: 14px; font-size: 1rem; background: #fafafa; transition: all 0.3s;" required>
+                            <label for="reg-password" class="auth-label">Password</label>
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 1.6rem;">
+                        <div style="position: relative;">
+                            <i class="fas fa-lock" style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--gray);"></i>
+                            <input type="password" id="reg-confirm-password" class="auth-input" placeholder=" " style="width: 100%; padding: 1.1rem 1.1rem 1.1rem 48px; border: 1px solid #e0e0e0; border-radius: 14px; font-size: 1rem; background: #fafafa; transition: all 0.3s;" required>
+                            <label for="reg-confirm-password" class="auth-label">Confirm Password</label>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-full" id="register-submit" style="padding: 1rem; font-weight: 700; font-size: 1.05rem; border-radius: 14px;">Create Account</button>
+                    <div style="text-align: center; margin-top: 1.8rem; font-size: 0.95rem; color: var(--gray);">
+                        Already have an account?  
+                        <a href="#" id="switch-to-login" style="color: var(--secondary); font-weight: 700; text-decoration: none;">Sign in</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="modal" id="package-detail-modal">
         <div class="modal-content">
-            <button class="close-modal" id="closeCart">&times;</button>
             <div class="modal-header">
-                <h2>Your Cart</h2>
+                <h3 id="detail-title"><i class="fas fa-kaaba" style="color: var(--secondary);"></i> Package Details</h3>
+                <button class="close-modal">&times;</button>
             </div>
-            <div class="cart-items" id="cartItems">
-                <p id="emptyCartMessage">Your cart is empty</p>
+            <div class="modal-body package-detail-body" id="package-detail-content"></div>
+            <div style="padding: 0 1.8rem 1.8rem;">
+                <button class="btn btn-full" onclick="openBookingModal()">
+                    <i class="fas fa-calendar-check"></i> Book This Package
+                </button>
             </div>
-            <div class="cart-total">
-                <span>Total:</span>
-                <span id="cartTotal">MVR0.00</span>
+        </div>
+    </div>
+    <div class="modal" id="booking-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-book" style="color: var(--secondary); margin-right: 8px;"></i> Book Your Sacred Journey</h3>
+                <button class="close-modal">&times;</button>
             </div>
-            <button class="btn c
+            <div class="modal-body">
+                <form id="booking-form">
+                    <div class="form-group">
+                        <label for="package-name">Selected Package</label>
+                        <input type="text" id="package-name" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-users"></i> Number of Pilgrims</label>
+                        <input type="number" id="passengers" min="1" value="1" required style="width: 100%;">
+                        <small style="color: var(--gray); display: block; margin-top: 0.3rem;">Include yourself and all family/group members.</small>
+                    </div>
+                    <div id="pilgrim-list"></div>
+                    <div class="form-group">
+                        <label for="email"><i class="fas fa-envelope"></i> Contact Email</label>
+                        <input type="email" id="email" placeholder="e.g., ahmed@example.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="phone"><i class="fas fa-phone"></i> Phone (+960)</label>
+                        <input type="tel" id="phone" placeholder="e.g., 771 2345" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="message"><i class="fas fa-sticky-note"></i> Special Requests</label>
+                        <textarea id="message" rows="3" placeholder="e.g., wheelchair assistance, dietary needs..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-full">Submit Booking Request</button>
+                </form>
+                <div class="booking-slip" id="booking-slip" style="display: none;">
+                    <h4>Your Booking Confirmation</h4>
+                    <div class="info-row">
+                        <span class="info-label">Package:</span>
+                        <span class="info-value" id="slip-package">-</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Pilgrims:</span>
+                        <span class="info-value" id="slip-pilgrims">-</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Contact:</span>
+                        <span class="info-value" id="slip-contact">-</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Agency:</span>
+                        <span class="info-value" id="slip-agency">-</span>
+                    </div>
+                    <div class="total">
+                        Your booking has been successfully submitted. The agency will contact you within 24 hours.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal" id="inquiry-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-comments" style="color: var(--secondary); margin-right: 8px;"></i> Send Inquiry</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="inquiry-form">
+                    <input type="hidden" id="inquiry-agency-name">
+                    <input type="hidden" id="inquiry-agency-phone">
+                    <div class="form-group">
+                        <label for="inq-full-name"><i class="fas fa-user"></i> Your Full Name</label>
+                        <input type="text" id="inq-full-name" placeholder="e.g., Ahmed Naseer" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="inq-email"><i class="fas fa-envelope"></i> Email (Optional)</label>
+                        <input type="email" id="inq-email" placeholder="e.g., ahmed@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="inq-phone"><i class="fas fa-phone"></i> Phone (+960)</label>
+                        <input type="tel" id="inq-phone" placeholder="e.g., 771 2345" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="inq-message"><i class="fas fa-comment"></i> Your Message</label>
+                        <textarea id="inq-message" rows="3" placeholder="Please share your inquiry about Umrah/Hajj packages..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-full">Send via WhatsApp & Telegram</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+         // Initialize Supabase with correct API key
+        let SUPABASE_URL = "https://bkgagnttyqgtnxamvhcx.supabase.co";
+        let SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJrZ2FnbnR0eXFndG54YW12aGN4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg5ODMxNzIsImV4cCI6MjA3NDU1OTE3Mn0.dlY2Wlg5ZMuio9esi4-qwfOkcBSSExptvVf_pVviLtQ";
+        // Create Supabase client
+        let supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        // === DATA MANAGEMENT ===
+        let umrahGroups = [];
+        let hajjGroups = [];
+        let agencies = [];
+        let currentPackage = null;
+        // === LOCAL DATA AS FALLBACK ===
+        const localUmrahGroups = [
+            {
+                id: 1,
+                title: "MHCL - Standard Umrah",
+                agent: "Maldives Hajj Corporation Limited (MHCL)",
+                price: "MVR 21,965 – 22,965",
+                departure: "Multiple dates",
+                duration: "10 Days",
+                image: "img6.jpg",
+                description: "Basic Umrah package with essential services including visa, accommodation, and guidance.",
+                features: ["Visa Included", "Basic Hotel", "Guided Tawaf", "Group Transport"],
+                type: "standard"
+            },
+            {
+                id: 2,
+                title: "MHCL - 15-Day Umrah",
+                agent: "Maldives Hajj Corporation Limited (MHCL)",
+                price: "MVR 41,965",
+                departure: "Multiple dates",
+                duration: "15 Days",
+                image: "img7.jpg",
+                description: "Extended Umrah journey with more time for worship and ziyarat.",
+                features: ["Extended Stay", "Ziyarat Tours", "Meals Included", "Near Haram"],
+                type: "standard"
+            },
+            {
+                id: 3,
+                title: "ZamZam - December Umrah 2025",
+                agent: "ZamZam Hajj & Umrah",
+                price: "MVR 27,500",
+                departure: "December 2025",
+                duration: "12 Days",
+                image: "img8.jpg",
+                description: "Winter Umrah package with comfortable accommodations and full support.",
+                features: ["Dec Departure", "Comfort Hotel", "Full Support", "Group Flights"],
+                type: "premium"
+            },
+            {
+                id: 4,
+                title: "Tazkiyah - VIP Umrah (Apr-May 2025)",
+                agent: "Tazkiyah Pvt Ltd",
+                price: "~\$3,650 (≈MVR 55,000)",
+                departure: "April-May 2025",
+                duration: "14 Days",
+                image: "img9.jpg",
+                description: "Premium VIP experience with luxury hotels and personalized services.",
+                features: ["VIP Service", "5-Star Hotel", "Personal Guide", "All Meals"],
+                type: "vip"
+            },
+            {
+                id: 5,
+                title: "Al-Hijra - Economy Umrah",
+                agent: "Al-Hijra Travel & Tours Pvt Ltd",
+                price: "MVR 25,000",
+                departure: "January 2025",
+                duration: "10 Days",
+                image: "img10.jpg",
+                description: "Budget-friendly Umrah package for those seeking value without compromising on essentials.",
+                features: ["Economy Flight", "Shared Room", "Daily Meals", "Transportation"],
+                type: "standard"
+            },
+            {
+                id: 6,
+                title: "Sisilfaru - Family Umrah",
+                agent: "Sisilfaru Hajj & Umrah Group Pvt Ltd",
+                price: "MVR 32,000",
+                departure: "February 2025",
+                duration: "12 Days",
+                image: "img11.jpg",
+                description: "Designed for families, this package offers family rooms and child-friendly activities.",
+                features: ["Family Rooms", "Children's Activities", "Dedicated Guide", "All Meals"],
+                type: "premium"
+            },
+            {
+                id: 7,
+                title: "Nawa - Luxury Umrah",
+                agent: "Nawa Hajj & Umrah Pvt Ltd",
+                price: "MVR 60,000",
+                departure: "March 2025",
+                duration: "14 Days",
+                image: "img12.jpg",
+                description: "Indulge in luxury with premium accommodations, private transportation, and exclusive services.",
+                features: ["Luxury Hotel", "Private Transfer", "Gourmet Meals", "Personal Concierge"],
+                type: "vip"
+            },
+            {
+                id: 8,
+                title: "Thaiseer - Budget Umrah",
+                agent: "Thaiseer Travels & Trade Pvt Ltd",
+                price: "MVR 19,999",
+                departure: "April 2025",
+                duration: "8 Days",
+                image: "img13.jpg",
+                description: "The most affordable option for a quick and simple Umrah pilgrimage.",
+                features: ["Lowest Price", "Basic Services", "Shared Accommodation", "Group Visa"],
+                type: "standard"
+            }
+        ];
+        const localHajjGroups = [
+            {
+                id: 101,
+                title: "MHCL - Hajj Standard 2025",
+                agent: "Maldives Hajj Corporation Limited (MHCL)",
+                price: "MVR 69,965",
+                departure: "Hajj Season 2025",
+                duration: "35 Days",
+                image: "img14.jpg",
+                description: "Official government Hajj package including airfare, accommodation in Makkah & Madinah, transportation, meals, and full ritual support.",
+                features: ["Return Airfare", "Makkah & Madinah Stay", "Hajj Rituals", "Ziyarat", "All Meals"],
+                type: "standard"
+            },
+            {
+                id: 102,
+                title: "MHCL - Hajj Premium 2025",
+                agent: "Maldives Hajj Corporation Limited (MHCL)",
+                price: "MVR 89,965",
+                departure: "Hajj Season 2025",
+                duration: "35 Days",
+                image: "img5.jpg",
+                description: "Enhanced comfort with upgraded hotel rooms and additional services for a more serene Hajj experience.",
+                features: ["Premium Hotel", "Priority Services", "Enhanced Meals", "Dedicated Guide"],
+                type: "premium"
+            }
+        ];
+        const localAgencies = [
+            { id: 1, name: "Maldives Hajj Corporation Limited (MHCL)", contact: "+960 796 1012, Hotline: 1435", phone: "9607961012", type: "mhcl" },
+            { id: 2, name: "Acro Pvt Ltd", contact: "+960 778 4578", phone: "9607784578", type: "other" },
+            { id: 3, name: "Qibla Hajj & Umrah", contact: "+960 966 6104", phone: "9609666104", type: "other" },
+            { id: 4, name: "Thaiseer Travels & Trade Pvt Ltd", contact: "+960 332 1718", phone: "9603321718", type: "other" },
+            { id: 5, name: "Zaee Group Pvt Ltd", contact: "+960 777 9471", phone: "9607779471", type: "other" },
+            { id: 6, name: "Al Ain Travels", contact: "+960 333 5900", phone: "9603335900", type: "other" },
+            { id: 7, name: "Faree Hajj & Umrah", contact: "+960 956 6028 / +960 9110 909", phone: "9609566028", type: "other" },
+            { id: 8, name: "Askoi Hajj & Umrah", contact: "+960 771 8064", phone: "9607718064", type: "other" },
+            { id: 9, name: "ZamZam Hajj & Umrah", contact: "+960 799 9065 / +960 777 6174 / +960 791 1121", phone: "9607999065", type: "zamzam" },
+            { id: 10, name: "Tazkiyah Pvt Ltd", contact: "+960 777 9471", phone: "9607779471", type: "tazkiyah" },
+        ];
+
+        // === NEW: LOAD UMRah PACKAGES FROM umrah_packages TABLE ===
+        async function loadUmrahPackagesFromSupabase() {
+            try {
+                console.log('Loading Umrah packages from Supabase...');
+                const { data, error } = await supabase
+                    .from('umrah_packages')
+                    .select('*')
+                    .eq('is_active', true)
+                    .order('departure_date', { ascending: true });
+
+                if (error) throw error;
+
+                // Map Supabase fields to your UI structure
+                umrahGroups = data.map(pkg => ({
+                    id: pkg.id,
+                    title: pkg.name,
+                    agent: pkg.business_id ? 'Agency id: ' + pkg.business_id : 'Unknown Agency',
+                    price: `MVR ${parseFloat(pkg.price).toLocaleString()}`,
+                    departure: new Date(pkg.departure_date).toLocaleDateString('en-GB'),
+                    duration: `${pkg.duration_days} Days`,
+                    image: pkg.image_url 
+                        ? (pkg.image_url.startsWith('http') 
+                            ? pkg.image_url 
+                            : `https://bkgagnttyqgtnxamvhcx.supabase.co/storage/v1/object/public/umrah-package-images/${pkg.image_url}`)
+                        : 'https://placehold.co/600x400/e2e8f0/64748b?text=No+Image',
+                    description: pkg.description || 'No description available.',
+                    features: [
+                        pkg.meals_included ? 'Meals Included' : 'Meals Not Included',
+                        pkg.visa_included ? 'Visa Included' : 'Visa Not Included',
+                        `Duration: ${pkg.duration_days} days`,
+                        `Departure: ${new Date(pkg.departure_date).toLocaleDateString()}`
+                    ].filter(Boolean),
+                    type: pkg.is_active ? 'standard' : 'inactive' // Adjust based on your needs
+                }));
+
+                console.log('Umrah packages loaded:', umrahGroups);
+                return true;
+            } catch (error) {
+                console.error('Error loading Umrah packages:', error);
+                return false;
+            }
+        }
+
+        // === SUPERBASE FUNCTIONS ===
+        async function loadPackagesFromSupabase() {
+            try {
+                console.log('Loading data from Supabase...');
+                // Load Umrah packages from the correct table
+                const umrahLoaded = await loadUmrahPackagesFromSupabase();
+                if (!umrahLoaded) {
+                    // Fallback to local data if Supabase fails
+                    umrahGroups = [...localUmrahGroups];
+                }
+
+                // Load Hajj packages (unchanged)
+                const { data: hajjData, error: hajjError } = await supabase
+                    .from('packages')
+                    .select('*')
+                    .eq('package_type', 'hajj')
+                    .eq('is_active', true)
+                    .order('created_at', { ascending: false });
+                if (hajjError) throw hajjError;
+                hajjGroups = hajjData.map(pkg => ({
+                    id: pkg.id,
+                    title: pkg.title,
+                    agent: pkg.agent,
+                    price: pkg.price_range,
+                    departure: pkg.departure_info,
+                    duration: pkg.duration,
+                    image: pkg.image_url,
+                    description: pkg.description,
+                    features: pkg.features || [],
+                    type: pkg.category
+                }));
+
+                // Load agencies (unchanged)
+                const { data: agenciesData, error: agenciesError } = await supabase
+                    .from('agencies')
+                    .select('*')
+                    .eq('is_approved', true)
+                    .order('name');
+                if (agenciesError) throw agenciesError;
+                agencies = agenciesData.map(agency => ({
+                    id: agency.id,
+                    name: agency.name,
+                    contact: agency.contact_info,
+                    phone: agency.phone,
+                    type: agency.agency_type
+                }));
+
+                console.log('Data loaded successfully from Supabase');
+                return true;
+            } catch (error) {
+                console.error('Error loading data from Supabase:', error);
+                // Fallback to local data
+                loadLocalData();
+                return false;
+            }
+        }
+        function loadLocalData() {
+            console.log('Using local data as fallback');
+            umrahGroups = [...localUmrahGroups];
+            hajjGroups = [...localHajjGroups];
+            agencies = [...localAgencies];
+        }
+        async function saveUserToSupabase(userData) {
+            try {
+                const { data, error } = await supabase
+                    .from('users')
+                    .insert([
+                        {
+                            email: userData.email,
+                            full_name: userData.name,
+                            phone: userData.phone,
+                            travel_type: userData.travelType,
+                            created_at: new Date().toISOString()
+                        }
+                    ])
+                    .select();
+                if (error) throw error;
+                return data;
+            } catch (error) {
+                console.error('Error saving user to Supabase:', error);
+                return null;
+            }
+        }
+        async function saveBookingToSupabase(bookingData) {
+    try {
+        const { data, error } = await supabase
+            .from('bookings')
+            .insert([
+                {
+                    package_id: bookingData.packageId,
+                    package_name: bookingData.packageName,
+                    user_email: bookingData.userEmail,
+                    user_phone: bookingData.userPhone,
+                    passengers: bookingData.passengers,
+                    pilgrim_names: JSON.stringify(bookingData.pilgrimNames),   // ✅ Convert array to string
+                    pilgrim_dobs: JSON.stringify(bookingData.pilgrimDOBs),     // ✅ Convert array to string
+                    special_requests: bookingData.specialRequests || '',
+                    status: 'pending'
+                    // created_at is auto-set by DB default
+                }
+            ])
+            .select();
+
+        if (error) throw error;
+        return data;
+    } catch (error) {
+        console.error('Booking save error:', error.message || error);
+        return null;
+    }
+}
+        async function saveInquiryToSupabase(inquiryData) {
+            try {
+                const { data, error } = await supabase
+                    .from('inquiries')
+                    .insert([
+                        {
+                            agency_name: inquiryData.agencyName,
+                            agency_phone: inquiryData.agencyPhone,
+                            user_name: inquiryData.userName,
+                            user_email: inquiryData.userEmail,
+                            user_phone: inquiryData.userPhone,
+                            message: inquiryData.message,
+                            status: 'new',
+                            created_at: new Date().toISOString()
+                        }
+                    ])
+                    .select();
+                if (error) throw error;
+                return data;
+            } catch (error) {
+                console.error('Error saving inquiry to Supabase:', error);
+                return null;
+            }
+        }
+        // === AUTH STATE ===
+        function updateAuthUI() {
+            const isLoggedIn = localStorage.getItem('goumrah_user');
+            const authButtons = document.getElementById('auth-buttons');
+            const logoutButton = document.getElementById('logout-button');
+            if (isLoggedIn) {
+                authButtons.style.display = 'none';
+                logoutButton.style.display = 'flex';
+            } else {
+                authButtons.style.display = 'flex';
+                logoutButton.style.display = 'none';
+            }
+        }
+        async function login(email, password) {
+    try {
+        const { data, error } = await supabase.auth.signInWithPassword({
+            email: email,
+            password: password
+        });
+
+        if (error) throw error;
+
+        // Correctly use the authenticated user data
+        const userData = {
+            id: data.user.id,
+            email: data.user.email,
+            name: data.user.user_metadata?.full_name || email.split('@')[0]
+        };
+
+        localStorage.setItem('goumrah_user', JSON.stringify(userData));
+        updateAuthUI();
+        hideAllModals();
+        alert('✅ Login successful! Welcome back.');
+        return true;
+    } catch (error) {
+        console.error('Login error:', error);
+        alert('❌ Login failed. Please try again.');
+        return false;
+    }
+}
+        async function register(userData) {
+  // 1. Register the user in Supabase Auth
+  const { data: authData, error: authError } = await supabase.auth.signUp({
+    email: userData.email,
+    password: userData.password,
+    options: {
+      data: {
+        full_name: userData.name,
+        phone: userData.phone,
+        travel_type: userData.travelType
+      }
+    }
+  });
+  if (authError) {
+    console.error('Auth registration error:', authError);
+    alert('❌ Registration failed: ' + (authError.message || 'Unknown error'));
+    return false;
+  }
+  if (!authData.user) {
+    alert('✅ Please check your email to confirm your account.');
+    return true;
+  }
+  // Optional: If you still want to store in a separate `users` table (not needed if using auth.user metadata)
+  // Only do this if you have a good reason (e.g., complex profile data)
+  /*
+  const { error: dbError } = await supabase
+    .from('users')
+    .insert({
+      id: authData.user.id,
+      email: userData.email,
+      full_name: userData.name,
+      phone: userData.phone,
+      travel_type: userData.travelType
+    });
+  */
+  // Save to localStorage (for UI only)
+  localStorage.setItem('goumrah_user', JSON.stringify({
+    id: authData.user.id,
+    email: userData.email,
+    name: userData.name
+  }));
+  updateAuthUI();
+  hideAllModals();
+  alert('✅ Registration started! Please check your email for confirmation.');
+  return true;
+}
+        function logout() {
+            localStorage.removeItem('goumrah_user');
+            updateAuthUI();
+            alert('👋 You have been logged out.');
+        }
+        // === DISPLAY FUNCTIONS ===
+        function displayGroups(groups, containerId) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            container.innerHTML = '';
+            groups.forEach(group => {
+                const card = document.createElement('div');
+                card.className = 'group-card';
+                card.innerHTML = `
+                    <div class="group-image" style="background-image: url('${group.image}')"></div>
+                    <div class="group-content">
+                        <div class="group-header">
+                            <div>
+                                <h3 class="group-title">${group.title}</h3>
+                                <p class="group-agent">By ${group.agent}</p>
+                            </div>
+                            <div class="group-price">${group.price}</div>
+                        </div>
+                        <div class="group-details">
+                            <div class="group-detail">
+                                <i class="fas fa-calendar-alt"></i>
+                                <span>${group.departure}</span>
+                            </div>
+                            <div class="group-detail">
+                                <i class="fas fa-clock"></i>
+                                <span>${group.duration}</span>
+                            </div>
+                        </div>
+                        <p class="group-description">${group.description}</p>
+                        <div class="group-features">
+                            ${group.features.map(f => `<span class="feature">${f}</span>`).join('')}
+                        </div>
+                        <div class="card-actions">
+                            <button class="btn btn-outline view-details" data-id="${group.id}">View Details</button>
+                            <button class="btn book-now" data-id="${group.id}">Book Now</button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+            // Add event listeners
+            document.querySelectorAll('.book-now').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const g = groups.find(x => x.id == btn.dataset.id);
+                    if (g) {
+                        currentPackage = g;
+                        document.getElementById('package-name').value = g.title;
+                        generatePilgrimFields(1);
+                        document.getElementById('booking-modal').style.display = 'block';
+                    }
+                });
+            });
+            document.querySelectorAll('.view-details').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const g = groups.find(x => x.id == btn.dataset.id);
+                    if (g) {
+                        showPackageDetail(g);
+                    }
+                });
+            });
+        }
+        function showPackageDetail(packageData) {
+            currentPackage = packageData;
+            const modalContent = document.getElementById('package-detail-content');
+            modalContent.innerHTML = `
+                <div class="package-hero" style="background: linear-gradient(rgba(13,59,42,0.7), rgba(8,42,29,0.8)), url('${packageData.image}'); padding: 1.5rem; color: white; border-radius: 12px; margin-bottom: 1.5rem;">
+                    <h2 style="font-size: 1.8rem; font-family: 'Amiri', serif;">${packageData.title}</h2>
+                    <p style="opacity: 0.9;">By ${packageData.agent}</p>
+                    <div style="font-size: 1.4rem; font-weight: 700; color: var(--secondary);">${packageData.price}</div>
+                </div>
+                <div class="detail-section">
+                    <h4><i class="fas fa-info-circle" style="color: var(--primary); margin-right: 8px;"></i> Overview</h4>
+                    <p>${packageData.description}</p>
+                </div>
+                <div class="detail-section">
+                    <h4><i class="fas fa-star" style="color: var(--secondary); margin-right: 8px;"></i> Key Features</h4>
+                    <div style="display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 0.6rem;">
+                        ${packageData.features.map(f => `<span class="feature">${f}</span>`).join('')}
+                    </div>
+                </div>
+                <div class="detail-section" style="background: var(--accent-bg); padding: 1.2rem; border-radius: 10px; margin: 1.2rem 0;">
+                    <h4><i class="fas fa-route" style="color: var(--primary); margin-right: 8px;"></i> Itinerary Highlights</h4>
+                    <ul style="padding-left: 1.4rem; color: var(--gray);">
+                        <li>Arrival in Jeddah / Makkah</li>
+                        <li>Perform Umrah rituals with guidance</li>
+                        <li>Ziyarat in Makkah & Madinah</li>
+                        <li>Comfortable return arrangements</li>
+                    </ul>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1.2rem 0;">
+                    <div style="background: #f8f9f5; padding: 1rem; border-radius: 8px;">
+                        <h5 style="color: var(--primary); margin-bottom: 0.6rem;"><i class="fas fa-check-circle"></i> Included</h5>
+                        <ul style="font-size: 0.95rem; padding-left: 1.2rem;">
+                            <li>Round-trip flights</li>
+                            <li>Hotel near Haram</li>
+                            <li>Visa processing</li>
+                            <li>Meals (as per plan)</li>
+                        </ul>
+                    </div>
+                    <div style="background: #fdf6f0; padding: 1rem; border-radius: 8px;">
+                        <h5 style="color: var(--primary); margin-bottom: 0.6rem;"><i class="fas fa-exclamation-circle"></i> Notes</h5>
+                        <ul style="font-size: 0.95rem; padding-left: 1.2rem;">
+                            <li>50% advance payment</li>
+                            <li>Subject to availability</li>
+                            <li>Children under 2: free</li>
+                        </ul>
+                    </div>
+                </div>
+            `;
+            document.getElementById('package-detail-modal').style.display = 'block';
+        }
+        function openBookingModal() {
+            if (currentPackage) {
+                document.getElementById('package-name').value = currentPackage.title;
+                generatePilgrimFields(1);
+                document.getElementById('package-detail-modal').style.display = 'none';
+                document.getElementById('booking-modal').style.display = 'block';
+            }
+        }
+        function generatePilgrimFields(count) {
+            const container = document.getElementById('pilgrim-list');
+            container.innerHTML = '';
+            for (let i = 1; i <= count; i++) {
+                const entry = document.createElement('div');
+                entry.className = 'pilgrim-entry';
+                entry.innerHTML = `
+                    <h4>Pilgrim ${i}${i === 1 ? ' (Primary)' : ''}</h4>
+                    <div class="form-group">
+                        <label>Full Name (as in Passport)</label>
+                        <input type="text" name="pilgrim-name-${i}" placeholder="e.g., Ahmed Naseer" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Date of Birth</label>
+                        <input type="date" name="pilgrim-dob-${i}" required>
+                    </div>
+                `;
+                container.appendChild(entry);
+            }
+        }
+        function displayAgencies(list) {
+            const container = document.getElementById('agencies-container');
+            if (!container) return;
+            container.innerHTML = '';
+            list.forEach(a => {
+                const card = document.createElement('div');
+                card.className = 'agency-card';
+                card.innerHTML = `
+                    <div class="agency-header">
+                        <div class="agency-icon"><i class="fas fa-mosque"></i></div>
+                        <h3 class="agency-name">${a.name}</h3>
+                    </div>
+                    <div class="agency-detail">
+                        <i class="fas fa-phone"></i>
+                        <span><strong>Contact:</strong> ${a.contact}</span>
+                    </div>
+                    <button class="btn btn-outline contact-agency" data-id="${a.id}">Contact via WhatsApp</button>
+                `;
+                container.appendChild(card);
+            });
+            document.querySelectorAll('.contact-agency').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const a = agencies.find(x => x.id == btn.dataset.id);
+                    if (a && a.phone) {
+                        document.getElementById('inquiry-agency-name').value = a.name;
+                        document.getElementById('inquiry-agency-phone').value = a.phone;
+                        document.getElementById('inquiry-modal').style.display = 'block';
+                    } else {
+                        alert(`📞 ${a.name}
+ℹ️ Contact details not available.`);
+                    }
+                });
+            });
+        }
+        // === FILTERING ===
+        function filterGroups() {
+            const activeTab = document.querySelector('.tab-btn.active').dataset.tab;
+            let list = activeTab === 'umrah' ? [...umrahGroups] : [...hajjGroups];
+            const month = document.getElementById('departure-date').value;
+            const dur = document.getElementById('duration').value;
+            const price = document.getElementById('price-range').value;
+            const pkgType = document.getElementById('package-type').value;
+            if (month) {
+                const year = month.split('-')[0];
+                list = list.filter(g => g.departure.includes(year));
+            }
+            if (dur !== 'all') {
+                list = list.filter(g => {
+                    const d = parseInt(g.duration) || 0;
+                    if (dur === '7') return d <= 7;
+                    if (dur === '10') return d > 7 && d <= 10;
+                    if (dur === '14') return d > 10 && d <= 14;
+                    if (dur === '21') return d > 21;
+                    return true;
+                });
+            }
+            if (price !== 'all') {
+                list = list.filter(g => {
+                    const pText = g.price.replace(/[^\d]/g, '');
+                    const p = parseInt(pText.substring(0,5)) || 0;
+                    if (price === 'low') return p < 30000;
+                    if (price === 'medium') return p >= 30000 && p <= 50000;
+                    if (price === 'high') return p > 50000;
+                    return true;
+                });
+            }
+            if (pkgType !== 'all') {
+                list = list.filter(g => g.type === pkgType);
+            }
+            if (activeTab === 'umrah') displayGroups(list, 'umrah-container');
+            else displayGroups(list, 'hajj-container');
+        }
+        function filterAgencies() {
+            displayAgencies(agencies);
+        }
+        // === MODAL FUNCTIONS ===
+        function showLoginModal() {
+            document.getElementById('login-modal').style.display = 'block';
+        }
+        function showRegisterModal() {
+            document.getElementById('register-modal').style.display = 'block';
+        }
+        function hideAllModals() {
+            document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
+        }
+        function switchToRegister() {
+            hideAllModals();
+            showRegisterModal();
+        }
+        function switchToLogin() {
+            hideAllModals();
+            showLoginModal();
+        }
+        // === INIT ===
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Load data from Supabase
+            await loadPackagesFromSupabase();
+            updateAuthUI();
+            displayGroups(umrahGroups, 'umrah-container');
+            displayGroups(hajjGroups, 'hajj-container');
+            displayAgencies(agencies);
+            // Auth buttons
+            document.getElementById('login-btn').addEventListener('click', showLoginModal);
+            document.getElementById('register-btn').addEventListener('click', showRegisterModal);
+            document.getElementById('logout-btn').addEventListener('click', logout);
+            document.getElementById('switch-to-register').addEventListener('click', switchToRegister);
+            document.getElementById('switch-to-login').addEventListener('click', switchToLogin);
+            // Close modals
+            document.querySelectorAll('.close-modal').forEach(btn => {
+                btn.addEventListener('click', hideAllModals);
+            });
+            window.addEventListener('click', e => {
+                if (e.target.classList.contains('modal')) {
+                    hideAllModals();
+                }
+            });
+            // Login form
+            document.getElementById('login-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('login-email').value;
+                const password = document.getElementById('login-password').value;
+                await login(email, password);
+            });
+            // Register form
+            document.getElementById('register-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const name = document.getElementById('reg-name').value;
+                const email = document.getElementById('reg-email').value;
+                const phone = document.getElementById('reg-phone').value;
+                const travelType = document.getElementById('reg-travel-type').value;
+                const password = document.getElementById('reg-password').value;
+                const confirmPassword = document.getElementById('reg-confirm-password').value;
+                if (password !== confirmPassword) {
+                    alert('❌ Passwords do not match.');
+                    return;
+                }
+                const userData = {
+                    name: name,
+                    email: email,
+                    phone: phone,
+                    travelType: travelType,
+                    password: password
+                };
+                await register(userData);
+            });
+            // Booking form
+document.getElementById('booking-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    // 🔒 CRITICAL: Ensure a package is selected
+    if (!currentPackage) {
+        alert('❌ No package selected. Please choose a package first.');
+        return;
+    }
+    const passengers = parseInt(document.getElementById('passengers').value) || 1;
+    const pilgrimNames = [];
+    const pilgrimDOBs = [];
+    for (let i = 1; i <= passengers; i++) {
+        const name = document.querySelector(`[name="pilgrim-name-${i}"]`)?.value || 'N/A';
+        const dob = document.querySelector(`[name="pilgrim-dob-${i}"]`)?.value || 'N/A';
+        pilgrimNames.push(name);
+        pilgrimDOBs.push(dob);
+    }
+    const bookingData = {
+        packageId: currentPackage.id,
+        packageName: currentPackage.title,
+        userEmail: document.getElementById('email').value,
+        userPhone: document.getElementById('phone').value,
+        passengers: passengers,
+        pilgrimNames: JSON.stringify(pilgrimNames),
+        pilgrimDOBs: JSON.stringify(pilgrimDOBs),
+        specialRequests: document.getElementById('message').value
+    };
+    const supabaseResult = await saveBookingToSupabase(bookingData);
+    if (supabaseResult) {
+        // ✅ ADD THIS SUCCESS LOGIC:
+        // 1. Hide the form
+        document.getElementById('booking-form').style.display = 'none';
+        // 2. Show the booking slip
+        document.getElementById('booking-slip').style.display = 'block';
+        // 3. Populate the slip with data
+        document.getElementById('slip-package').textContent = currentPackage.title;
+        document.getElementById('slip-pilgrims').textContent = passengers + " pilgrim(s)";
+        document.getElementById('slip-contact').textContent = document.getElementById('email').value + " / " + document.getElementById('phone').value;
+        document.getElementById('slip-agency').textContent = currentPackage.agent;
+        // 4. Scroll to top of modal to see confirmation
+        document.getElementById('booking-modal').scrollTo(0, 0);
+    } else {
+        alert('❌ Failed to save booking. Please try again.');
+    }
+});
+            // Inquiry form
+            document.getElementById('inquiry-form').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const agencyName = document.getElementById('inquiry-agency-name').value;
+                const agencyPhone = document.getElementById('inquiry-agency-phone').value;
+                const fullName = document.getElementById('inq-full-name').value;
+                const email = document.getElementById('inq-email').value;
+                const phone = document.getElementById('inq-phone').value;
+                const userMessage = document.getElementById('inq-message').value;
+                // Save inquiry to Supabase
+                const inquiryData = {
+                    agencyName: agencyName,
+                    agencyPhone: agencyPhone,
+                    userName: fullName,
+                    userEmail: email,
+                    userPhone: phone,
+                    message: userMessage
+                };
+                const supabaseResult = await saveInquiryToSupabase(inquiryData);
+                if (supabaseResult) {
+                    let message = `Hello ${agencyName},
+`;
+                    message += `I am ${fullName}.
+`;
+                    if (email) message += `Email: ${email}
+`;
+                    message += `Phone: +960 ${phone}
+`;
+                    message += `Inquiry: ${userMessage}
+`;
+                    message += `Sent via GoUmrah.mv`;
+                    const encodedMessage = encodeURIComponent(message);
+                    window.open(`https://wa.me/${agencyPhone}?text=${encodedMessage}`, '_blank');
+                    window.open(`https://t.me/+${agencyPhone}`, '_blank');
+                    alert('✅ Your inquiry has been sent via WhatsApp and Telegram!');
+                    hideAllModals();
+                    document.getElementById('inquiry-form').reset();
+                } else {
+                    alert('❌ Failed to save inquiry. Please try again.');
+                }
+            });
+            // Tabs
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    const tab = btn.dataset.tab;
+                    document.getElementById('umrah').style.display = 'none';
+                    document.getElementById('hajj').style.display = 'none';
+                    document.getElementById('agencies').style.display = 'none';
+                    if (tab === 'umrah') document.getElementById('umrah').style.display = 'block';
+                    if (tab === 'hajj') document.getElementById('hajj').style.display = 'block';
+                    if (tab === 'agencies') document.getElementById('agencies').style.display = 'block';
+                });
+            });
+            // Filters
+            ['departure-date', 'duration', 'price-range', 'package-type'].forEach(id => {
+                document.getElementById(id).addEventListener('change', () => {
+                    const tab = document.querySelector('.tab-btn.active').dataset.tab;
+                    if (tab === 'agencies') filterAgencies();
+                    else filterGroups();
+                });
+            });
+            // Mobile menu toggle
+            document.querySelector('.mobile-menu').addEventListener('click', () => {
+                document.querySelector('nav ul').classList.toggle('show');
+            });
+            // Mobile menu close on link click
+            document.querySelectorAll('nav a').forEach(a => {
+                a.addEventListener('click', e => {
+                    e.preventDefault();
+                    const href = a.getAttribute('href');
+                    if (href === '#agencies') {
+                        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                        document.querySelector('.tab-btn[data-tab="agencies"]').classList.add('active');
+                        document.getElementById('umrah').style.display = 'none';
+                        document.getElementById('hajj').style.display = 'none';
+                        document.getElementById('agencies').style.display = 'block';
+                    }
+                    const target = document.querySelector(href);
+                    if (target) {
+                        target.scrollIntoView({ behavior: 'smooth' });
+                        document.querySelector('nav ul').classList.remove('show');
+                    }
+                });
+            });
+            // Passenger count
+            document.getElementById('passengers').addEventListener('input', function() {
+                const count = Math.max(1, parseInt(this.value) || 1);
+                this.value = count;
+                generatePilgrimFields(count);
+            });
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
