@@ -4,8 +4,8 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Bloomkraft — Business Portal (MVR)</title>
+  <!-- ✅ Added Supabase & Chart.js (fixed trailing spaces) -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase-browser.min.js"></script>
   <style>
     :root{
@@ -106,6 +106,7 @@
     .stat h4{ margin:0; color:var(--muted); font-weight:600; font-size:16px; }
     .stat .value{ margin-top:12px; font-size:32px; font-weight:800; color:var(--accent-text); }
 
+    /* Chart container */
     .chart-container {
       height: 120px;
       margin-top: 16px;
@@ -278,12 +279,63 @@
       border-top:1px solid rgba(15,23,36,0.04); 
       text-align: center;
     }
+
+    /* Invoice Modal */
+    #invoiceModal .modal {
+      max-width: 800px;
+      padding: 30px;
+    }
+    .invoice-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      border-bottom: 2px solid var(--turquoise);
+      padding-bottom: 10px;
+    }
+    .invoice-title {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--accent-text);
+    }
+    .invoice-info {
+      margin-bottom: 20px;
+    }
+    .invoice-info div {
+      margin: 4px 0;
+    }
+    .invoice-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    .invoice-table th,
+    .invoice-table td {
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+    }
+    .invoice-table th {
+      color: var(--muted);
+      font-weight: 600;
+    }
+    .invoice-total {
+      text-align: right;
+      margin-top: 20px;
+      font-size: 20px;
+      font-weight: 700;
+    }
+    .invoice-footer {
+      margin-top: 30px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+    }
   </style>
 </head>
 <body>
 
   <!-- LOGIN MODAL -->
-  <div id="loginModal" class="modal-backdrop" style="display: none;">
+  <div id="loginModal" class="modal-backdrop">
     <div class="modal">
       <h2>🔐 Admin Login</h2>
       <p>Enter your 4-digit PIN to access Bloomkraft</p>
@@ -317,8 +369,10 @@
 
     <main id="content">
 
+      <!-- DASHBOARD WITH BAR CHART -->
       <section id="page-dashboard" class="page" aria-hidden="false" style="display:block;">
         <h1 class="page-title">Overview</h1>
+
         <div class="controls">
           <div class="date-filters">
             <label>From: <input type="date" id="dashboardFrom" /></label>
@@ -327,28 +381,33 @@
             <button class="btn secondary" id="clearDashboardFilter">Clear</button>
           </div>
         </div>
+
         <div class="big-stats">
           <div class="stat card">
             <h4>Total Sale</h4>
             <div class="value" id="totalIncomeEl">MVR 0</div>
           </div>
+
           <div class="stat card">
             <h4>Total Expenses</h4>
             <div class="value" id="totalExpensesEl">MVR 0</div>
           </div>
+
           <div class="stat card">
             <h4>Net Profit</h4>
             <div class="value" id="netProfitEl">MVR 0</div>
           </div>
         </div>
+
         <div class="card" style="margin-top:24px;">
-          <h4 class="muted" style="margin:0 0 12px;">Summary</h4>
+          <h4 class="muted" style="margin:0 0 12px;">Summary (Bar Chart)</h4>
           <div class="chart-container">
             <canvas id="summaryBarChart"></canvas>
           </div>
         </div>
       </section>
 
+      <!-- SALE -->
       <section id="page-income" class="page" aria-hidden="true" style="display:none;">
         <h1 class="page-title">Sale</h1>
         <div class="controls">
@@ -370,6 +429,7 @@
         </div>
       </section>
 
+      <!-- EXPENSES -->
       <section id="page-expenses" class="page" aria-hidden="true" style="display:none;">
         <h1 class="page-title">Expenses</h1>
         <div class="controls">
@@ -396,9 +456,46 @@
     <footer>Bloomkraft • Business Portal — Currency: MVR</footer>
   </div>
 
+  <!-- INVOICE MODAL (initially hidden) -->
+  <div id="invoiceModal" class="modal-backdrop" style="display:none;">
+    <div class="modal">
+      <button style="float:right; background:none; border:none; font-size:20px; cursor:pointer;" onclick="this.parentElement.style.display='none'">×</button>
+      <div class="invoice-header">
+        <div class="invoice-title">Bloomkraft</div>
+        <div>Invoice #<span id="invoiceNumber"></span></div>
+      </div>
+      <div class="invoice-info">
+        <div><strong>Date:</strong> <span id="invoiceDate"></span></div>
+        <div><strong>Description:</strong> <span id="invoiceDesc"></span></div>
+        <div><strong>Payment Method:</strong> <span id="invoicePayment"></span></div>
+      </div>
+      <table class="invoice-table">
+        <thead>
+          <tr>
+            <th>Description</th>
+            <th>Amount (MVR)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span id="invoiceItemDesc"></span></td>
+            <td><span id="invoiceAmount"></span></td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="invoice-total">
+        Total: <strong><span id="invoiceTotal"></span></strong>
+      </div>
+      <div class="invoice-footer">
+        Thank you for your business!<br />
+        Currency: MVR • Bloomkraft Portal
+      </div>
+    </div>
+  </div>
+
 <script>
 // ==============================
-// 🔑 SUPABASE CONFIG — FIXED TRAILING SPACES
+// 🔑 SUPABASE CONFIG — REPLACE WITH YOUR OWN
 // ==============================
 const SUPABASE_URL = 'https://skejswjowceevzkloiog.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNrZWpzd2pvd2NlZXZ6a2xvaW9nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwNDg0NDYsImV4cCI6MjA3NjYyNDQ0Nn0.Q9LSKeEkOO7FZv3SOKvJa8efksRfGFYrvZDKlQmKTqk';
@@ -406,62 +503,47 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ==============================
-// ✅ LOGIN SYSTEM
+// ✅ LOGIN
 // ==============================
 const ADMIN_PIN = '5252';
-const loginModal = document.getElementById('loginModal');
-const mainApp = document.getElementById('mainApp');
-
-function showLogin() {
-  loginModal.style.display = 'flex';
-  mainApp.style.display = 'none';
-}
-
-function showApp() {
-  loginModal.style.display = 'none';
-  mainApp.style.display = 'block';
-}
-
 function checkLogin() {
   if (sessionStorage.getItem('bloomkraft_logged_in') === 'true') {
-    showApp();
+    document.getElementById('loginModal').style.display = 'none';
+    document.getElementById('mainApp').style.display = 'block';
     return true;
   }
   return false;
 }
-
-async function attemptLogin() {
-  const pinInput = document.getElementById('loginPin');
-  const errorEl = document.getElementById('loginError');
-  const pin = pinInput.value.trim();
-  errorEl.textContent = '';
-
+document.getElementById('loginBtn').addEventListener('click', attemptLogin);
+document.getElementById('loginPin').addEventListener('keypress', e => { if (e.key === 'Enter') attemptLogin(); });
+function attemptLogin() {
+  const pin = document.getElementById('loginPin').value.trim();
+  const err = document.getElementById('loginError');
   if (pin === ADMIN_PIN) {
     sessionStorage.setItem('bloomkraft_logged_in', 'true');
-    showApp();
-    await init();
+    document.getElementById('loginModal').style.display = 'none';
+    document.getElementById('mainApp').style.display = 'block';
+    init(); // Load data from Supabase
   } else {
-    errorEl.textContent = 'Incorrect PIN.';
-    pinInput.value = '';
-    pinInput.focus();
+    err.textContent = 'Incorrect PIN.';
+    document.getElementById('loginPin').value = '';
   }
 }
 
 // ==============================
-// 📊 DATA & RENDERING
+// 📊 DATA FROM SUPABASE
 // ==============================
 let incomeRecords = [];
 let expenseRecords = [];
 
 async function loadAllData() {
   try {
-    // Load sales
-    let { data: sales, error: salesError } = await supabase
+    // Load sales (rename 'income' → 'sales' as per your preference)
+    const {  sales, error: salesErr } = await supabase
       .from('sales')
       .select('*')
       .order('date', { ascending: false });
-
-    if (salesError) throw salesError;
+    if (salesErr) throw salesErr;
     incomeRecords = sales.map(s => ({
       id: s.id,
       date: s.date,
@@ -471,12 +553,11 @@ async function loadAllData() {
     }));
 
     // Load expenses
-    let { data: expenses, error: expensesError } = await supabase
+    const {  expenses, error: expErr } = await supabase
       .from('expenses')
       .select('*')
       .order('date', { ascending: false });
-
-    if (expensesError) throw expensesError;
+    if (expErr) throw expErr;
     expenseRecords = expenses.map(e => ({
       id: e.id,
       date: e.date,
@@ -487,8 +568,8 @@ async function loadAllData() {
 
     renderAll();
   } catch (err) {
-    console.error('Data load error:', err);
-    alert('Failed to load data. Check console.');
+    console.error('Supabase load error:', err);
+    alert('Failed to load data from database. Check console.');
   }
 }
 
@@ -498,10 +579,12 @@ function renderAll() {
   renderExpenses();
 }
 
+// ==============================
+// ⚙️ UTILS
+// ==============================
 function formatMVR(n) {
   return (Number(n) || 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 }) + ' MVR';
 }
-
 function isInDateRange(dateStr, { from, to }) {
   if (!from && !to) return true;
   const d = new Date(dateStr);
@@ -518,7 +601,9 @@ function computeTotals(filter = { from: '', to: '' }) {
   return { totalIncome, totalExpenses, netProfit: totalIncome - totalExpenses };
 }
 
-// Chart
+// ==============================
+// 📈 DASHBOARD CHART
+// ==============================
 let summaryBarChart = null;
 function renderDashboard() {
   const filter = {
@@ -538,11 +623,11 @@ function renderDashboard() {
     if (summaryBarChart) summaryBarChart.destroy();
     summaryBarChart = new Chart(ctx, {
       type: 'bar',
-       {
+      data: {
         labels: ['Sale', 'Expenses'],
         datasets: [{
           label: 'Amount (MVR)',
-           [totalIncome, totalExpenses], // ✅ FIXED: added missing ''
+          data: [totalIncome, totalExpenses],
           backgroundColor: ['#2fb6ac', '#ff6b6b'],
           borderWidth: 0,
           borderRadius: 6,
@@ -562,7 +647,9 @@ function renderDashboard() {
   }
 }
 
-// Income Table + Invoice
+// ==============================
+// 💰 SALE & EXPENSE TABLES
+// ==============================
 function renderIncome() {
   const tbody = document.querySelector('#incomeTable tbody');
   const filter = { from: document.getElementById('incomeFrom')?.value, to: document.getElementById('incomeTo')?.value };
@@ -581,7 +668,7 @@ function renderIncome() {
       <td>${r.payment}</td>
       <td style="color:var(--success)">${formatMVR(r.amount)}</td>
       <td class="table-actions">
-        <button class="btn small secondary" onclick="downloadInvoice('${r.id}', '${r.date}', '${r.description}', '${r.payment}', ${r.amount})">Invoice</button>
+        <button class="btn small secondary" onclick="generateInvoice('${r.id}', '${r.date}', '${r.description}', '${r.payment}', ${r.amount})">Invoice</button>
         <button class="btn small secondary" onclick="openEditIncomeModal('${r.id}', '${r.date}', '${r.description}', '${r.payment}', ${r.amount})">Edit</button>
         <button class="btn small danger" onclick="deleteIncome('${r.id}')">Delete</button>
       </td>
@@ -592,49 +679,18 @@ function renderIncome() {
   document.getElementById('incomeTotalFooter').textContent = formatMVR(total);
 }
 
-// PDF Invoice
-async function downloadInvoice(id, date, desc, payment, amount) {
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
-
-  doc.setFontSize(24);
-  doc.setTextColor(7, 48, 58);
-  doc.text("Bloomkraft", 20, 20);
-  doc.setFontSize(12);
-  doc.setTextColor(107, 114, 128);
-  doc.text(`Invoice #INV-${id.substring(0, 8).toUpperCase()}`, 160, 20);
-
-  doc.setFontSize(12);
-  doc.setTextColor(0, 0, 0);
-  doc.text(`Date: ${date}`, 20, 40);
-  doc.text(`Description: ${desc}`, 20, 46);
-  doc.text(`Payment: ${payment}`, 20, 52);
-
-  doc.setFontSize(12);
-  doc.setFillColor(249, 253, 253);
-  doc.rect(20, 65, 170, 10, 'F');
-  doc.setTextColor(107, 114, 128);
-  doc.text("Description", 25, 72);
-  doc.text("Amount (MVR)", 160, 72);
-
-  doc.setTextColor(0, 0, 0);
-  doc.text(desc, 25, 85);
-  doc.text(formatMVR(amount).replace(' MVR', ''), 160, 85);
-
-  doc.setFontSize(16);
-  doc.setFont("helvetica", "bold");
-  doc.text("Total:", 120, 105);
-  doc.text(formatMVR(amount).replace(' MVR', ''), 160, 105);
-
-  doc.setFontSize(10);
-  doc.setTextColor(107, 114, 128);
-  doc.text("Thank you for your business!", 20, 130);
-  doc.text("Currency: MVR • Bloomkraft Portal", 20, 135);
-
-  doc.save(`invoice-${id}.pdf`);
+function generateInvoice(id, date, desc, payment, amount) {
+  const invoiceNum = `INV-${id.substring(0, 8).toUpperCase()}`;
+  document.getElementById('invoiceNumber').textContent = invoiceNum;
+  document.getElementById('invoiceDate').textContent = date;
+  document.getElementById('invoiceDesc').textContent = desc;
+  document.getElementById('invoicePayment').textContent = payment;
+  document.getElementById('invoiceItemDesc').textContent = desc;
+  document.getElementById('invoiceAmount').textContent = formatMVR(amount);
+  document.getElementById('invoiceTotal').textContent = formatMVR(amount);
+  document.getElementById('invoiceModal').style.display = 'flex';
 }
 
-// Expenses Table
 function renderExpenses() {
   const tbody = document.querySelector('#expensesTable tbody');
   const filter = { from: document.getElementById('expensesFrom')?.value, to: document.getElementById('expensesTo')?.value };
@@ -664,7 +720,7 @@ function renderExpenses() {
 }
 
 // ==============================
-// ✏️ CRUD OPERATIONS
+// ✏️ CRUD OPERATIONS (SYNC WITH SUPABASE)
 // ==============================
 async function addSale(date, desc, payment, amount) {
   const { error } = await supabase.from('sales').insert([{ date, description: desc, payment, amount }]);
@@ -730,19 +786,27 @@ async function saveIncome(id) {
   const payment = document.getElementById('m_pay').value;
   const amount = parseFloat(document.getElementById('m_amt').value) || 0;
   
-  if (id === 'new') {
-    await addSale(date, desc, payment, amount);
-  } else {
-    await updateSale(id, date, desc, payment, amount);
+  try {
+    if (id === 'new') {
+      await addSale(date, desc, payment, amount);
+    } else {
+      await updateSale(id, date, desc, payment, amount);
+    }
+    await loadAllData();
+  } catch (err) {
+    alert('Save failed: ' + err.message);
   }
   document.querySelector('.modal-backdrop')?.remove();
-  await loadAllData();
 }
 
 async function deleteIncome(id) {
   if (confirm('Delete this sale?')) {
-    await deleteSale(id);
-    await loadAllData();
+    try {
+      await deleteSale(id);
+      await loadAllData();
+    } catch (err) {
+      alert('Delete failed: ' + err.message);
+    }
   }
 }
 
@@ -777,19 +841,27 @@ async function saveExpense(id) {
   const payment = document.getElementById('m_pay').value;
   const amount = parseFloat(document.getElementById('m_amt').value) || 0;
   
-  if (id === 'new') {
-    await addExpense(date, desc, payment, amount);
-  } else {
-    await updateExpense(id, date, desc, payment, amount);
+  try {
+    if (id === 'new') {
+      await addExpense(date, desc, payment, amount);
+    } else {
+      await updateExpense(id, date, desc, payment, amount);
+    }
+    await loadAllData();
+  } catch (err) {
+    alert('Save failed: ' + err.message);
   }
   document.querySelector('.modal-backdrop')?.remove();
-  await loadAllData();
 }
 
 async function deleteExpense(id) {
   if (confirm('Delete this expense?')) {
-    await deleteExpense(id);
-    await loadAllData();
+    try {
+      await deleteExpense(id);
+      await loadAllData();
+    } catch (err) {
+      alert('Delete failed: ' + err.message);
+    }
   }
 }
 
@@ -843,12 +915,8 @@ document.addEventListener('click', (e) => {
 });
 
 // ==============================
-// 🔄 AUTO-REFRESH & NAV
+// 🔄 NAVIGATION & FILTERS & EXPORT
 // ==============================
-function setupAutoRefresh() {
-  setInterval(loadAllData, 30000); // every 30s
-}
-
 document.addEventListener('click', (e) => {
   if (e.target.matches('.nav a')) {
     e.preventDefault();
@@ -882,7 +950,6 @@ document.addEventListener('click', (e) => {
   }
 });
 
-// CSV Export
 function exportCsv(filename, headers, records) {
   const csv = [headers, ...records.map(r => [r.date, r.description, r.payment, r.amount])]
     .map(row => row.map(String).map(cell => cell.includes(',') ? `"${cell}"` : cell).join(','))
@@ -910,20 +977,12 @@ document.addEventListener('click', (e) => {
 // ==============================
 async function init() {
   await loadAllData();
-  setupAutoRefresh();
 }
 
-// Wait for DOM, then check login
+// Wait for DOM
 document.addEventListener('DOMContentLoaded', () => {
-  // Bind login events
-  document.getElementById('loginBtn')?.addEventListener('click', attemptLogin);
-  document.getElementById('loginPin')?.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') attemptLogin();
-  });
-
-  // Show login or app
   if (!checkLogin()) {
-    showLogin();
+    document.getElementById('loginModal').style.display = 'flex';
   }
 });
 </script>
