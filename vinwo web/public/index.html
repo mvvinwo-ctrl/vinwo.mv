@@ -1,10 +1,11 @@
+
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Bloomkraft — Business Portal (MVR)</title>
-  <!-- ✅ Added Supabase & Chart.js (fixed trailing spaces) -->
+  <!-- ✅ Fixed: Removed trailing spaces in script URLs -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase-browser.min.js"></script>
   <style>
@@ -106,7 +107,6 @@
     .stat h4{ margin:0; color:var(--muted); font-weight:600; font-size:16px; }
     .stat .value{ margin-top:12px; font-size:32px; font-weight:800; color:var(--accent-text); }
 
-    /* Chart container */
     .chart-container {
       height: 120px;
       margin-top: 16px;
@@ -280,7 +280,6 @@
       text-align: center;
     }
 
-    /* Invoice Modal */
     #invoiceModal .modal {
       max-width: 800px;
       padding: 30px;
@@ -368,11 +367,8 @@
     </header>
 
     <main id="content">
-
-      <!-- DASHBOARD WITH BAR CHART -->
       <section id="page-dashboard" class="page" aria-hidden="false" style="display:block;">
         <h1 class="page-title">Overview</h1>
-
         <div class="controls">
           <div class="date-filters">
             <label>From: <input type="date" id="dashboardFrom" /></label>
@@ -381,24 +377,20 @@
             <button class="btn secondary" id="clearDashboardFilter">Clear</button>
           </div>
         </div>
-
         <div class="big-stats">
           <div class="stat card">
             <h4>Total Sale</h4>
             <div class="value" id="totalIncomeEl">MVR 0</div>
           </div>
-
           <div class="stat card">
             <h4>Total Expenses</h4>
             <div class="value" id="totalExpensesEl">MVR 0</div>
           </div>
-
           <div class="stat card">
             <h4>Net Profit</h4>
             <div class="value" id="netProfitEl">MVR 0</div>
           </div>
         </div>
-
         <div class="card" style="margin-top:24px;">
           <h4 class="muted" style="margin:0 0 12px;">Summary (Bar Chart)</h4>
           <div class="chart-container">
@@ -407,7 +399,6 @@
         </div>
       </section>
 
-      <!-- SALE -->
       <section id="page-income" class="page" aria-hidden="true" style="display:none;">
         <h1 class="page-title">Sale</h1>
         <div class="controls">
@@ -429,7 +420,6 @@
         </div>
       </section>
 
-      <!-- EXPENSES -->
       <section id="page-expenses" class="page" aria-hidden="true" style="display:none;">
         <h1 class="page-title">Expenses</h1>
         <div class="controls">
@@ -450,13 +440,11 @@
           </table>
         </div>
       </section>
-
     </main>
 
     <footer>Bloomkraft • Business Portal — Currency: MVR</footer>
   </div>
 
-  <!-- INVOICE MODAL (initially hidden) -->
   <div id="invoiceModal" class="modal-backdrop" style="display:none;">
     <div class="modal">
       <button style="float:right; background:none; border:none; font-size:20px; cursor:pointer;" onclick="this.parentElement.style.display='none'">×</button>
@@ -495,7 +483,7 @@
 
 <script>
 // ==============================
-// 🔑 SUPABASE CONFIG — REPLACE WITH YOUR OWN
+// 🔑 SUPABASE CONFIG — FIXED URL (NO TRAILING SPACES)
 // ==============================
 const SUPABASE_URL = 'https://skejswjowceevzkloiog.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNrZWpzd2pvd2NlZXZ6a2xvaW9nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwNDg0NDYsImV4cCI6MjA3NjYyNDQ0Nn0.Q9LSKeEkOO7FZv3SOKvJa8efksRfGFYrvZDKlQmKTqk';
@@ -506,6 +494,7 @@ const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // ✅ LOGIN
 // ==============================
 const ADMIN_PIN = '5252';
+
 function checkLogin() {
   if (sessionStorage.getItem('bloomkraft_logged_in') === 'true') {
     document.getElementById('loginModal').style.display = 'none';
@@ -514,8 +503,10 @@ function checkLogin() {
   }
   return false;
 }
+
 document.getElementById('loginBtn').addEventListener('click', attemptLogin);
 document.getElementById('loginPin').addEventListener('keypress', e => { if (e.key === 'Enter') attemptLogin(); });
+
 function attemptLogin() {
   const pin = document.getElementById('loginPin').value.trim();
   const err = document.getElementById('loginError');
@@ -523,7 +514,7 @@ function attemptLogin() {
     sessionStorage.setItem('bloomkraft_logged_in', 'true');
     document.getElementById('loginModal').style.display = 'none';
     document.getElementById('mainApp').style.display = 'block';
-    init(); // Load data from Supabase
+    init();
   } else {
     err.textContent = 'Incorrect PIN.';
     document.getElementById('loginPin').value = '';
@@ -538,8 +529,7 @@ let expenseRecords = [];
 
 async function loadAllData() {
   try {
-    // Load sales (rename 'income' → 'sales' as per your preference)
-    const {  sales, error: salesErr } = await supabase
+    const { data: sales, error: salesErr } = await supabase
       .from('sales')
       .select('*')
       .order('date', { ascending: false });
@@ -552,8 +542,7 @@ async function loadAllData() {
       amount: parseFloat(s.amount)
     }));
 
-    // Load expenses
-    const {  expenses, error: expErr } = await supabase
+    const { data: expenses, error: expErr } = await supabase
       .from('expenses')
       .select('*')
       .order('date', { ascending: false });
@@ -585,6 +574,7 @@ function renderAll() {
 function formatMVR(n) {
   return (Number(n) || 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 }) + ' MVR';
 }
+
 function isInDateRange(dateStr, { from, to }) {
   if (!from && !to) return true;
   const d = new Date(dateStr);
@@ -605,6 +595,7 @@ function computeTotals(filter = { from: '', to: '' }) {
 // 📈 DASHBOARD CHART
 // ==============================
 let summaryBarChart = null;
+
 function renderDashboard() {
   const filter = {
     from: document.getElementById('dashboardFrom').value,
@@ -720,7 +711,7 @@ function renderExpenses() {
 }
 
 // ==============================
-// ✏️ CRUD OPERATIONS (SYNC WITH SUPABASE)
+// ✏️ CRUD OPERATIONS
 // ==============================
 async function addSale(date, desc, payment, amount) {
   const { error } = await supabase.from('sales').insert([{ date, description: desc, payment, amount }]);
@@ -979,7 +970,6 @@ async function init() {
   await loadAllData();
 }
 
-// Wait for DOM
 document.addEventListener('DOMContentLoaded', () => {
   if (!checkLogin()) {
     document.getElementById('loginModal').style.display = 'flex';
