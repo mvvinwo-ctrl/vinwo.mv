@@ -398,7 +398,7 @@
 
 <script>
 // ==============================
-// 🔑 SUPABASE CONFIG — REPLACE THESE!
+// 🔑 SUPABASE CONFIG — FIXED TRAILING SPACES
 // ==============================
 const SUPABASE_URL = 'https://skejswjowceevzkloiog.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNrZWpzd2pvd2NlZXZ6a2xvaW9nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwNDg0NDYsImV4cCI6MjA3NjYyNDQ0Nn0.Q9LSKeEkOO7FZv3SOKvJa8efksRfGFYrvZDKlQmKTqk';
@@ -406,7 +406,7 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ==============================
-// ✅ LOGIN SYSTEM (FIXED)
+// ✅ LOGIN SYSTEM
 // ==============================
 const ADMIN_PIN = '5252';
 const loginModal = document.getElementById('loginModal');
@@ -439,7 +439,7 @@ async function attemptLogin() {
   if (pin === ADMIN_PIN) {
     sessionStorage.setItem('bloomkraft_logged_in', 'true');
     showApp();
-    await init(); // Load data after showing app
+    await init();
   } else {
     errorEl.textContent = 'Incorrect PIN.';
     pinInput.value = '';
@@ -456,7 +456,7 @@ let expenseRecords = [];
 async function loadAllData() {
   try {
     // Load sales
-    let {  sales, error: salesError } = await supabase
+    let { data: sales, error: salesError } = await supabase
       .from('sales')
       .select('*')
       .order('date', { ascending: false });
@@ -471,7 +471,7 @@ async function loadAllData() {
     }));
 
     // Load expenses
-    let {  expenses, error: expensesError } = await supabase
+    let { data: expenses, error: expensesError } = await supabase
       .from('expenses')
       .select('*')
       .order('date', { ascending: false });
@@ -542,7 +542,7 @@ function renderDashboard() {
         labels: ['Sale', 'Expenses'],
         datasets: [{
           label: 'Amount (MVR)',
-           [totalIncome, totalExpenses],
+           [totalIncome, totalExpenses], // ✅ FIXED: added missing ''
           backgroundColor: ['#2fb6ac', '#ff6b6b'],
           borderWidth: 0,
           borderRadius: 6,
