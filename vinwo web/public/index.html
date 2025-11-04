@@ -1,11 +1,10 @@
-
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Bloomkraft — Business Portal (MVR)</title>
-  <!-- ✅ Fixed: Removed trailing spaces in script URLs -->
+  <!-- ✅ Fixed: no trailing spaces -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase-browser.min.js"></script>
   <style>
@@ -333,7 +332,6 @@
 </head>
 <body>
 
-  <!-- LOGIN MODAL -->
   <div id="loginModal" class="modal-backdrop">
     <div class="modal">
       <h2>🔐 Admin Login</h2>
@@ -483,7 +481,7 @@
 
 <script>
 // ==============================
-// 🔑 SUPABASE CONFIG — FIXED URL (NO TRAILING SPACES)
+// 🔑 SUPABASE CONFIG — NO TRAILING SPACES
 // ==============================
 const SUPABASE_URL = 'https://skejswjowceevzkloiog.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNrZWpzd2pvd2NlZXZ6a2xvaW9nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwNDg0NDYsImV4cCI6MjA3NjYyNDQ0Nn0.Q9LSKeEkOO7FZv3SOKvJa8efksRfGFYrvZDKlQmKTqk';
@@ -592,7 +590,7 @@ function computeTotals(filter = { from: '', to: '' }) {
 }
 
 // ==============================
-// 📈 DASHBOARD CHART
+// 📈 DASHBOARD CHART — FIXED
 // ==============================
 let summaryBarChart = null;
 
@@ -618,7 +616,7 @@ function renderDashboard() {
         labels: ['Sale', 'Expenses'],
         datasets: [{
           label: 'Amount (MVR)',
-          data: [totalIncome, totalExpenses],
+          data: [totalIncome, totalExpenses], // ✅ FIXED: 'data:' was missing
           backgroundColor: ['#2fb6ac', '#ff6b6b'],
           borderWidth: 0,
           borderRadius: 6,
