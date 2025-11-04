@@ -5,9 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Bloomkraft — Business Portal (MVR)</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  <!-- jsPDF for PDF generation -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <!-- Supabase client -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase-browser.min.js"></script>
   <style>
     :root{
@@ -280,15 +278,12 @@
       border-top:1px solid rgba(15,23,36,0.04); 
       text-align: center;
     }
-
-    /* Hidden invoice canvas for PDF */
-    #invoiceCanvas { display: none; }
   </style>
 </head>
 <body>
 
   <!-- LOGIN MODAL -->
-  <div id="loginModal" class="modal-backdrop">
+  <div id="loginModal" class="modal-backdrop" style="display: none;">
     <div class="modal">
       <h2>🔐 Admin Login</h2>
       <p>Enter your 4-digit PIN to access Bloomkraft</p>
@@ -401,54 +396,67 @@
     <footer>Bloomkraft • Business Portal — Currency: MVR</footer>
   </div>
 
-  <!-- Hidden canvas for PDF rendering -->
-  <canvas id="invoiceCanvas" width="800" height="600"></canvas>
-
 <script>
-// ===== SUPABASE CONFIG =====
-// 🔑 Replace these with your own Supabase project keys
-const SUPABASE_URL = 'https://your-project.supabase.co';
-const SUPABASE_ANON_KEY = 'your-anon-key-here';
+// ==============================
+// 🔑 SUPABASE CONFIG — REPLACE THESE!
+// ==============================
+const SUPABASE_URL = 'https://skejswjowceevzkloiog.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNrZWpzd2pvd2NlZXZ6a2xvaW9nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwNDg0NDYsImV4cCI6MjA3NjYyNDQ0Nn0.Q9LSKeEkOO7FZv3SOKvJa8efksRfGFYrvZDKlQmKTqk';
 
-// Initialize Supabase client
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// ===== LOGIN =====
+// ==============================
+// ✅ LOGIN SYSTEM (FIXED)
+// ==============================
 const ADMIN_PIN = '5252';
+const loginModal = document.getElementById('loginModal');
+const mainApp = document.getElementById('mainApp');
+
+function showLogin() {
+  loginModal.style.display = 'flex';
+  mainApp.style.display = 'none';
+}
+
+function showApp() {
+  loginModal.style.display = 'none';
+  mainApp.style.display = 'block';
+}
+
 function checkLogin() {
   if (sessionStorage.getItem('bloomkraft_logged_in') === 'true') {
-    document.getElementById('loginModal').style.display = 'none';
-    document.getElementById('mainApp').style.display = 'block';
+    showApp();
     return true;
   }
   return false;
 }
 
-document.getElementById('loginBtn').addEventListener('click', attemptLogin);
-document.getElementById('loginPin').addEventListener('keypress', e => { if (e.key === 'Enter') attemptLogin(); });
+async function attemptLogin() {
+  const pinInput = document.getElementById('loginPin');
+  const errorEl = document.getElementById('loginError');
+  const pin = pinInput.value.trim();
+  errorEl.textContent = '';
 
-function attemptLogin() {
-  const pin = document.getElementById('loginPin').value.trim();
-  const err = document.getElementById('loginError');
   if (pin === ADMIN_PIN) {
     sessionStorage.setItem('bloomkraft_logged_in', 'true');
-    document.getElementById('loginModal').style.display = 'none';
-    document.getElementById('mainApp').style.display = 'block';
-    init();
+    showApp();
+    await init(); // Load data after showing app
   } else {
-    err.textContent = 'Incorrect PIN.';
-    document.getElementById('loginPin').value = '';
+    errorEl.textContent = 'Incorrect PIN.';
+    pinInput.value = '';
+    pinInput.focus();
   }
 }
 
-// ===== DATA FETCHING =====
+// ==============================
+// 📊 DATA & RENDERING
+// ==============================
 let incomeRecords = [];
 let expenseRecords = [];
 
 async function loadAllData() {
   try {
     // Load sales
-    let { data: sales, error: salesError } = await supabase
+    let {  sales, error: salesError } = await supabase
       .from('sales')
       .select('*')
       .order('date', { ascending: false });
@@ -463,7 +471,7 @@ async function loadAllData() {
     }));
 
     // Load expenses
-    let { data: expenses, error: expensesError } = await supabase
+    let {  expenses, error: expensesError } = await supabase
       .from('expenses')
       .select('*')
       .order('date', { ascending: false });
@@ -477,25 +485,23 @@ async function loadAllData() {
       amount: parseFloat(e.amount)
     }));
 
-    // Render
     renderAll();
   } catch (err) {
-    console.error('Failed to load data:', err);
-    alert('Failed to load data from server. Check console.');
+    console.error('Data load error:', err);
+    alert('Failed to load data. Check console.');
   }
 }
 
-// ===== RENDERING =====
 function renderAll() {
   renderDashboard();
   renderIncome();
   renderExpenses();
 }
 
-// ===== UTILS =====
 function formatMVR(n) {
   return (Number(n) || 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 }) + ' MVR';
 }
+
 function isInDateRange(dateStr, { from, to }) {
   if (!from && !to) return true;
   const d = new Date(dateStr);
@@ -512,7 +518,7 @@ function computeTotals(filter = { from: '', to: '' }) {
   return { totalIncome, totalExpenses, netProfit: totalIncome - totalExpenses };
 }
 
-// ===== CHART =====
+// Chart
 let summaryBarChart = null;
 function renderDashboard() {
   const filter = {
@@ -546,14 +552,7 @@ function renderDashboard() {
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            callbacks: {
-              label: (context) => `${context.dataset.label}: ${formatMVR(context.parsed.y)}`
-            }
-          }
-        },
+        plugins: { legend: { display: false } },
         scales: {
           x: { grid: { display: false }, ticks: { color: 'var(--muted)' } },
           y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.04)' }, ticks: { callback: (val) => val === 0 ? '0' : '', color: 'var(--muted)' } }
@@ -563,7 +562,7 @@ function renderDashboard() {
   }
 }
 
-// ===== INCOME TABLE + INVOICE =====
+// Income Table + Invoice
 function renderIncome() {
   const tbody = document.querySelector('#incomeTable tbody');
   const filter = { from: document.getElementById('incomeFrom')?.value, to: document.getElementById('incomeTo')?.value };
@@ -593,12 +592,11 @@ function renderIncome() {
   document.getElementById('incomeTotalFooter').textContent = formatMVR(total);
 }
 
-// ===== PDF INVOICE GENERATION =====
+// PDF Invoice
 async function downloadInvoice(id, date, desc, payment, amount) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
 
-  // Header
   doc.setFontSize(24);
   doc.setTextColor(7, 48, 58);
   doc.text("Bloomkraft", 20, 20);
@@ -606,14 +604,12 @@ async function downloadInvoice(id, date, desc, payment, amount) {
   doc.setTextColor(107, 114, 128);
   doc.text(`Invoice #INV-${id.substring(0, 8).toUpperCase()}`, 160, 20);
 
-  // Info
   doc.setFontSize(12);
   doc.setTextColor(0, 0, 0);
   doc.text(`Date: ${date}`, 20, 40);
   doc.text(`Description: ${desc}`, 20, 46);
   doc.text(`Payment: ${payment}`, 20, 52);
 
-  // Table
   doc.setFontSize(12);
   doc.setFillColor(249, 253, 253);
   doc.rect(20, 65, 170, 10, 'F');
@@ -625,23 +621,20 @@ async function downloadInvoice(id, date, desc, payment, amount) {
   doc.text(desc, 25, 85);
   doc.text(formatMVR(amount).replace(' MVR', ''), 160, 85);
 
-  // Total
   doc.setFontSize(16);
   doc.setFont("helvetica", "bold");
   doc.text("Total:", 120, 105);
   doc.text(formatMVR(amount).replace(' MVR', ''), 160, 105);
 
-  // Footer
   doc.setFontSize(10);
   doc.setTextColor(107, 114, 128);
   doc.text("Thank you for your business!", 20, 130);
   doc.text("Currency: MVR • Bloomkraft Portal", 20, 135);
 
-  // Save
   doc.save(`invoice-${id}.pdf`);
 }
 
-// ===== EXPENSES =====
+// Expenses Table
 function renderExpenses() {
   const tbody = document.querySelector('#expensesTable tbody');
   const filter = { from: document.getElementById('expensesFrom')?.value, to: document.getElementById('expensesTo')?.value };
@@ -670,7 +663,9 @@ function renderExpenses() {
   document.getElementById('expensesTotalFooter').textContent = formatMVR(total);
 }
 
-// ===== CRUD OPERATIONS =====
+// ==============================
+// ✏️ CRUD OPERATIONS
+// ==============================
 async function addSale(date, desc, payment, amount) {
   const { error } = await supabase.from('sales').insert([{ date, description: desc, payment, amount }]);
   if (error) throw error;
@@ -701,7 +696,9 @@ async function deleteExpense(id) {
   if (error) throw error;
 }
 
-// ===== MODALS & HANDLERS =====
+// ==============================
+// 🪟 MODALS
+// ==============================
 function openEditIncomeModal(id, date, desc, payment, amount) {
   const modal = document.createElement('div');
   modal.className = 'modal-backdrop';
@@ -738,8 +735,8 @@ async function saveIncome(id) {
   } else {
     await updateSale(id, date, desc, payment, amount);
   }
-  document.querySelector('.modal-backdrop').remove();
-  await loadAllData(); // auto-refresh
+  document.querySelector('.modal-backdrop')?.remove();
+  await loadAllData();
 }
 
 async function deleteIncome(id) {
@@ -785,7 +782,7 @@ async function saveExpense(id) {
   } else {
     await updateExpense(id, date, desc, payment, amount);
   }
-  document.querySelector('.modal-backdrop').remove();
+  document.querySelector('.modal-backdrop')?.remove();
   await loadAllData();
 }
 
@@ -796,52 +793,96 @@ async function deleteExpense(id) {
   }
 }
 
-// ===== ADD BUTTONS =====
-document.getElementById('addIncomeBtn')?.addEventListener('click', () => {
-  const modal = document.createElement('div');
-  modal.className = 'modal-backdrop';
-  modal.innerHTML = `
-    <div class="modal">
-      <button style="float:right; background:none; border:none; font-size:20px; cursor:pointer;" onclick="this.parentElement.parentElement.remove()">✕</button>
-      <h3>Add Sale</h3>
-      <div class="field"><label>Date</label><input type="date" id="m_date" value="${new Date().toISOString().slice(0,10)}"></div>
-      <div class="field"><label>Description</label><input id="m_desc" placeholder="e.g. Product Sale"></div>
-      <div class="field"><label>Payment</label>
-        <select id="m_pay"><option>Cash</option><option>Transfer</option></select>
+// ==============================
+// ➕ ADD BUTTONS
+// ==============================
+document.addEventListener('click', (e) => {
+  if (e.target.id === 'addIncomeBtn') {
+    const modal = document.createElement('div');
+    modal.className = 'modal-backdrop';
+    modal.innerHTML = `
+      <div class="modal">
+        <button style="float:right; background:none; border:none; font-size:20px; cursor:pointer;" onclick="this.parentElement.parentElement.remove()">✕</button>
+        <h3>Add Sale</h3>
+        <div class="field"><label>Date</label><input type="date" id="m_date" value="${new Date().toISOString().slice(0,10)}"></div>
+        <div class="field"><label>Description</label><input id="m_desc" placeholder="e.g. Product Sale"></div>
+        <div class="field"><label>Payment</label>
+          <select id="m_pay"><option>Cash</option><option>Transfer</option></select>
+        </div>
+        <div class="field"><label>Amount (MVR)</label><input type="number" id="m_amt" value="0" step="0.01"></div>
+        <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:16px;">
+          <button class="btn secondary" onclick="this.parentElement.parentElement.parentElement.remove()">Cancel</button>
+          <button class="btn" onclick="saveIncome('new')">Add</button>
+        </div>
       </div>
-      <div class="field"><label>Amount (MVR)</label><input type="number" id="m_amt" value="0" step="0.01"></div>
-      <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:16px;">
-        <button class="btn secondary" onclick="this.parentElement.parentElement.parentElement.remove()">Cancel</button>
-        <button class="btn" onclick="saveIncome('new')">Add</button>
+    `;
+    document.body.appendChild(modal);
+  }
+
+  if (e.target.id === 'addExpenseBtn') {
+    const modal = document.createElement('div');
+    modal.className = 'modal-backdrop';
+    modal.innerHTML = `
+      <div class="modal">
+        <button style="float:right; background:none; border:none; font-size:20px; cursor:pointer;" onclick="this.parentElement.parentElement.remove()">✕</button>
+        <h3>Add Expense</h3>
+        <div class="field"><label>Date</label><input type="date" id="m_date" value="${new Date().toISOString().slice(0,10)}"></div>
+        <div class="field"><label>Description</label><input id="m_desc" placeholder="e.g. Office Supplies"></div>
+        <div class="field"><label>Payment</label>
+          <select id="m_pay"><option>Cash</option><option>Transfer</option></select>
+        </div>
+        <div class="field"><label>Amount (MVR)</label><input type="number" id="m_amt" value="0" step="0.01"></div>
+        <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:16px;">
+          <button class="btn secondary" onclick="this.parentElement.parentElement.parentElement.remove()">Cancel</button>
+          <button class="btn" onclick="saveExpense('new')">Add</button>
+        </div>
       </div>
-    </div>
-  `;
-  document.body.appendChild(modal);
+    `;
+    document.body.appendChild(modal);
+  }
 });
 
-document.getElementById('addExpenseBtn')?.addEventListener('click', () => {
-  const modal = document.createElement('div');
-  modal.className = 'modal-backdrop';
-  modal.innerHTML = `
-    <div class="modal">
-      <button style="float:right; background:none; border:none; font-size:20px; cursor:pointer;" onclick="this.parentElement.parentElement.remove()">✕</button>
-      <h3>Add Expense</h3>
-      <div class="field"><label>Date</label><input type="date" id="m_date" value="${new Date().toISOString().slice(0,10)}"></div>
-      <div class="field"><label>Description</label><input id="m_desc" placeholder="e.g. Office Supplies"></div>
-      <div class="field"><label>Payment</label>
-        <select id="m_pay"><option>Cash</option><option>Transfer</option></select>
-      </div>
-      <div class="field"><label>Amount (MVR)</label><input type="number" id="m_amt" value="0" step="0.01"></div>
-      <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:16px;">
-        <button class="btn secondary" onclick="this.parentElement.parentElement.parentElement.remove()">Cancel</button>
-        <button class="btn" onclick="saveExpense('new')">Add</button>
-      </div>
-    </div>
-  `;
-  document.body.appendChild(modal);
+// ==============================
+// 🔄 AUTO-REFRESH & NAV
+// ==============================
+function setupAutoRefresh() {
+  setInterval(loadAllData, 30000); // every 30s
+}
+
+document.addEventListener('click', (e) => {
+  if (e.target.matches('.nav a')) {
+    e.preventDefault();
+    document.querySelectorAll('.nav a').forEach(x => x.classList.remove('active'));
+    e.target.classList.add('active');
+    const page = e.target.dataset.page;
+    document.querySelectorAll('.page').forEach(sec => {
+      sec.style.display = sec.id === `page-${page}` ? 'block' : 'none';
+    });
+  }
 });
 
-// ===== EXPORT =====
+['dashboard','income','expenses'].forEach(p => {
+  const applyBtn = document.getElementById(`apply${p.charAt(0).toUpperCase() + p.slice(1)}Filter`);
+  const clearBtn = document.getElementById(`clear${p.charAt(0).toUpperCase() + p.slice(1)}Filter`);
+  if (applyBtn) {
+    applyBtn.addEventListener('click', () => {
+      if(p==='dashboard') renderDashboard();
+      else if(p==='income') renderIncome();
+      else renderExpenses();
+    });
+  }
+  if (clearBtn) {
+    clearBtn.addEventListener('click', () => {
+      document.getElementById(`${p}From`).value = '';
+      document.getElementById(`${p}To`).value = '';
+      if(p==='dashboard') renderDashboard();
+      else if(p==='income') renderIncome();
+      else renderExpenses();
+    });
+  }
+});
+
+// CSV Export
 function exportCsv(filename, headers, records) {
   const csv = [headers, ...records.map(r => [r.date, r.description, r.payment, r.amount])]
     .map(row => row.map(String).map(cell => cell.includes(',') ? `"${cell}"` : cell).join(','))
@@ -855,53 +896,36 @@ function exportCsv(filename, headers, records) {
   URL.revokeObjectURL(url);
 }
 
-document.getElementById('exportIncomeCsv')?.addEventListener('click', () => exportCsv('sale.csv', ['Date','Description','Payment','Amount'], incomeRecords));
-document.getElementById('exportExpensesCsv')?.addEventListener('click', () => exportCsv('expenses.csv', ['Date','Description','Payment','Amount'], expenseRecords));
-
-// ===== NAVIGATION =====
-document.querySelectorAll('.nav a').forEach(a => {
-  a.addEventListener('click', e => {
-    e.preventDefault();
-    document.querySelectorAll('.nav a').forEach(x => x.classList.remove('active'));
-    a.classList.add('active');
-    document.querySelectorAll('.page').forEach(sec => {
-      sec.style.display = sec.id === `page-${a.dataset.page}` ? 'block' : 'none';
-    });
-  });
+document.addEventListener('click', (e) => {
+  if (e.target.id === 'exportIncomeCsv') {
+    exportCsv('sale.csv', ['Date','Description','Payment','Amount'], incomeRecords);
+  }
+  if (e.target.id === 'exportExpensesCsv') {
+    exportCsv('expenses.csv', ['Date','Description','Payment','Amount'], expenseRecords);
+  }
 });
 
-// ===== FILTERS =====
-['dashboard','income','expenses'].forEach(p => {
-  const applyBtn = document.getElementById(`apply${p.charAt(0).toUpperCase() + p.slice(1)}Filter`);
-  const clearBtn = document.getElementById(`clear${p.charAt(0).toUpperCase() + p.slice(1)}Filter`);
-  if (applyBtn) applyBtn.addEventListener('click', () => {
-    if(p==='dashboard') renderDashboard();
-    else if(p==='income') renderIncome();
-    else renderExpenses();
-  });
-  if (clearBtn) clearBtn.addEventListener('click', () => {
-    document.getElementById(`${p}From`).value = '';
-    document.getElementById(`${p}To`).value = '';
-    if(p==='dashboard') renderDashboard();
-    else if(p==='income') renderIncome();
-    else renderExpenses();
-  });
-});
-
-// ===== AUTO REFRESH =====
-function setupAutoRefresh() {
-  setInterval(loadAllData, 30000); // every 30 seconds
-}
-
-// ===== INIT =====
+// ==============================
+// 🚀 INIT
+// ==============================
 async function init() {
   await loadAllData();
   setupAutoRefresh();
 }
 
-if (!checkLogin()) {
-  document.getElementById('loginModal').style.display = 'flex';
-}
+// Wait for DOM, then check login
+document.addEventListener('DOMContentLoaded', () => {
+  // Bind login events
+  document.getElementById('loginBtn')?.addEventListener('click', attemptLogin);
+  document.getElementById('loginPin')?.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') attemptLogin();
+  });
+
+  // Show login or app
+  if (!checkLogin()) {
+    showLogin();
+  }
+});
 </script>
 </body>
 </html>
