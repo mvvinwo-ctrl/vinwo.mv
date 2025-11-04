@@ -1,10 +1,11 @@
+
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Bloomkraft — Business Portal (MVR)</title>
-  <!-- ✅ Fixed: no trailing spaces -->
+  <!-- ✅ FIXED: No trailing spaces in script URLs -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase-browser.min.js"></script>
   <style>
@@ -332,11 +333,12 @@
 </head>
 <body>
 
+  <!-- LOGIN MODAL -->
   <div id="loginModal" class="modal-backdrop">
     <div class="modal">
       <h2>🔐 Admin Login</h2>
       <p>Enter your 4-digit PIN to access Bloomkraft</p>
-      <input type="password" id="loginPin" maxlength="4" inputmode="numeric" placeholder="••••" autocomplete="off" />
+      <input type="password" id="loginPin" maxlength="4" inputmode="numeric" placeholder="••••" autocomplete="off" autofocus />
       <div id="loginError" style="color:var(--danger); margin-top:8px; min-height:20px;"></div>
       <button class="btn" id="loginBtn" style="width:100%;">Login</button>
     </div>
@@ -443,6 +445,7 @@
     <footer>Bloomkraft • Business Portal — Currency: MVR</footer>
   </div>
 
+  <!-- INVOICE MODAL -->
   <div id="invoiceModal" class="modal-backdrop" style="display:none;">
     <div class="modal">
       <button style="float:right; background:none; border:none; font-size:20px; cursor:pointer;" onclick="this.parentElement.style.display='none'">×</button>
@@ -489,7 +492,7 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ==============================
-// ✅ LOGIN
+// ✅ LOGIN LOGIC — NOW WORKS
 // ==============================
 const ADMIN_PIN = '5252';
 
@@ -502,8 +505,18 @@ function checkLogin() {
   return false;
 }
 
-document.getElementById('loginBtn').addEventListener('click', attemptLogin);
-document.getElementById('loginPin').addEventListener('keypress', e => { if (e.key === 'Enter') attemptLogin(); });
+function setupLogin() {
+  const loginBtn = document.getElementById('loginBtn');
+  const pinInput = document.getElementById('loginPin');
+  const errorEl = document.getElementById('loginError');
+
+  if (!loginBtn || !pinInput) return;
+
+  loginBtn.addEventListener('click', attemptLogin);
+  pinInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') attemptLogin();
+  });
+}
 
 function attemptLogin() {
   const pin = document.getElementById('loginPin').value.trim();
@@ -516,6 +529,7 @@ function attemptLogin() {
   } else {
     err.textContent = 'Incorrect PIN.';
     document.getElementById('loginPin').value = '';
+    document.getElementById('loginPin').focus();
   }
 }
 
@@ -556,7 +570,7 @@ async function loadAllData() {
     renderAll();
   } catch (err) {
     console.error('Supabase load error:', err);
-    alert('Failed to load data from database. Check console.');
+    alert('Failed to load data. Please check your internet and Supabase settings.');
   }
 }
 
@@ -590,7 +604,7 @@ function computeTotals(filter = { from: '', to: '' }) {
 }
 
 // ==============================
-// 📈 DASHBOARD CHART — FIXED
+// 📈 DASHBOARD CHART — FIXED SYNTAX
 // ==============================
 let summaryBarChart = null;
 
@@ -612,11 +626,11 @@ function renderDashboard() {
     if (summaryBarChart) summaryBarChart.destroy();
     summaryBarChart = new Chart(ctx, {
       type: 'bar',
-      data: {
+       {
         labels: ['Sale', 'Expenses'],
         datasets: [{
           label: 'Amount (MVR)',
-          data: [totalIncome, totalExpenses], // ✅ FIXED: 'data:' was missing
+           [totalIncome, totalExpenses], // ✅ FIXED: was missing ""
           backgroundColor: ['#2fb6ac', '#ff6b6b'],
           borderWidth: 0,
           borderRadius: 6,
@@ -742,7 +756,7 @@ async function deleteExpense(id) {
 }
 
 // ==============================
-// 🪟 MODALS
+// 🪟 MODALS (EDIT/ADD)
 // ==============================
 function openEditIncomeModal(id, date, desc, payment, amount) {
   const modal = document.createElement('div');
@@ -904,7 +918,7 @@ document.addEventListener('click', (e) => {
 });
 
 // ==============================
-// 🔄 NAVIGATION & FILTERS & EXPORT
+// 🔄 NAVIGATION & FILTERS
 // ==============================
 document.addEventListener('click', (e) => {
   if (e.target.matches('.nav a')) {
@@ -939,6 +953,9 @@ document.addEventListener('click', (e) => {
   }
 });
 
+// ==============================
+// 📥 EXPORT CSV
+// ==============================
 function exportCsv(filename, headers, records) {
   const csv = [headers, ...records.map(r => [r.date, r.description, r.payment, r.amount])]
     .map(row => row.map(String).map(cell => cell.includes(',') ? `"${cell}"` : cell).join(','))
@@ -968,7 +985,9 @@ async function init() {
   await loadAllData();
 }
 
+// Ensure DOM is ready BEFORE attaching login
 document.addEventListener('DOMContentLoaded', () => {
+  setupLogin(); // ✅ Safely attach event listeners
   if (!checkLogin()) {
     document.getElementById('loginModal').style.display = 'flex';
   }
