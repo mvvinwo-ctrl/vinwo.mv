@@ -4,8 +4,9 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Bloomkraft — Business Portal (MVR)</title>
+  <!-- ✅ CORRECT SCRIPT PATHS -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase-browser.min.js"></script>
   <style>
     :root{
       --turquoise: #2fb6ac;
@@ -178,6 +179,7 @@
       cursor:pointer;
       font-weight:700;
       white-space:nowrap;
+      pointer-events: auto;
     }
     .btn.secondary{
       background:#f3f6f7;
@@ -214,15 +216,13 @@
 
     .modal-backdrop{
       position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
+      inset: 0;
       background: rgba(4,12,17,0.4);
       display: flex;
       align-items: center;
       justify-content: center;
       z-index: 10000;
+      pointer-events: auto;
     }
     .modal{
       width:90%;
@@ -232,6 +232,7 @@
       border-radius:16px;
       box-shadow:0 20px 50px rgba(3,20,24,0.3);
       text-align: left;
+      pointer-events: auto;
     }
     .modal h2, .modal h3{
       margin-top:0; color: var(--accent-text);
@@ -335,6 +336,7 @@
 </head>
 <body>
 
+  <!-- LOGIN MODAL -->
   <div id="loginModal" class="modal-backdrop">
     <div class="modal">
       <h2>🔐 Admin Login</h2>
@@ -345,6 +347,7 @@
     </div>
   </div>
 
+  <!-- MAIN APP (hidden until login) -->
   <div class="app" id="mainApp" role="application" aria-label="Bloomkraft business portal">
     <header>
       <div class="logo" aria-hidden="true">
@@ -446,6 +449,7 @@
     <footer>Bloomkraft • Business Portal — Currency: MVR</footer>
   </div>
 
+  <!-- INVOICE MODAL -->
   <div id="invoiceModal" class="modal-backdrop" style="display:none;">
     <div class="modal">
       <button style="float:right; background:none; border:none; font-size:20px; cursor:pointer;" onclick="document.getElementById('invoiceModal').style.display='none'">×</button>
@@ -483,389 +487,384 @@
   </div>
 
 <script>
-// ==============================
-// 🔑 SUPABASE CONFIG — CLEANED
-// ==============================
-const SUPABASE_URL = 'https://skejswjowceevzkloiog.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNrZWpzd2pvd2NlZXZ6a2xvaW9nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwNDg0NDYsImV4cCI6MjA3NjYyNDQ0Nn0.Q9LSKeEkOO7FZv3SOKvJa8efksRfGFYrvZDKlQmKTqk';
+// ✅ RUN ONLY WHEN DOM IS FULLY LOADED
+document.addEventListener('DOMContentLoaded', () => {
+  // ==============================
+  // CONFIG — NO TRAILING SPACES
+  // ==============================
+  const SUPABASE_URL = 'https://skejswjowceevzkloiog.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNrZWpzd2pvd2NlZXZ6a2xvaW9nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwNDg0NDYsImV4cCI6MjA3NjYyNDQ0Nn0.Q9LSKeEkOO7FZv3SOKvJa8efksRfGFYrvZDKlQmKTqk';
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const ADMIN_PIN = '5252';
 
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  // ==============================
+  // DOM ELEMENTS
+  // ==============================
+  const loginModal = document.getElementById('loginModal');
+  const mainApp = document.getElementById('mainApp');
+  const loginPin = document.getElementById('loginPin');
+  const loginBtn = document.getElementById('loginBtn');
+  const loginError = document.getElementById('loginError');
 
-// ==============================
-// ✅ LOGIN
-// ==============================
-const ADMIN_PIN = '5252';
+  // ==============================
+  // STATE
+  // ==============================
+  let incomeRecords = [];
+  let expenseRecords = [];
+  let summaryBarChart = null;
 
-function checkLogin() {
-  if (sessionStorage.getItem('bloomkraft_logged_in') === 'true') {
-    document.getElementById('loginModal').style.display = 'none';
-    document.getElementById('mainApp').style.display = 'block';
+  // ==============================
+  // LOGIN
+  // ==============================
+  function attemptLogin() {
+    const pin = loginPin.value.trim();
+    loginError.textContent = '';
+    if (pin === ADMIN_PIN) {
+      sessionStorage.setItem('bloomkraft_logged_in', 'true');
+      loginModal.style.display = 'none';
+      mainApp.style.display = 'block';
+      initApp();
+    } else {
+      loginError.textContent = 'Incorrect PIN.';
+      loginPin.value = '';
+      loginPin.focus();
+    }
+  }
+
+  // ==============================
+  // DATA
+  // ==============================
+  async function loadAllData() {
+    try {
+      const {  sales, error: salesErr } = await supabase
+        .from('sales')
+        .select('*')
+        .order('date', { ascending: false });
+      if (salesErr) throw salesErr;
+      incomeRecords = (sales || []).map(s => ({
+        id: s.id,
+        date: s.date,
+        description: s.description || '',
+        payment: s.payment || 'Cash',
+        amount: parseFloat(s.amount) || 0
+      }));
+
+      const {  expenses, error: expErr } = await supabase
+        .from('expenses')
+        .select('*')
+        .order('date', { ascending: false });
+      if (expErr) throw expErr;
+      expenseRecords = (expenses || []).map(e => ({
+        id: e.id,
+        date: e.date,
+        description: e.description || '',
+        payment: e.payment || 'Cash',
+        amount: parseFloat(e.amount) || 0
+      }));
+
+      renderAll();
+    } catch (err) {
+      console.error('Supabase error:', err);
+      alert('Failed to load data. Check console.');
+    }
+  }
+
+  // ==============================
+  // UTILS
+  // ==============================
+  function formatMVR(n) {
+    return (Number(n) || 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 }) + ' MVR';
+  }
+
+  function isInDateRange(dateStr, { from, to }) {
+    if (!from && !to) return true;
+    const d = new Date(dateStr);
+    if (from && d < new Date(from)) return false;
+    if (to && d > new Date(to)) return false;
     return true;
   }
-  return false;
-}
 
-function attemptLogin() {
-  const pin = document.getElementById('loginPin').value.trim();
-  const err = document.getElementById('loginError');
-  err.textContent = '';
-  if (pin === ADMIN_PIN) {
-    sessionStorage.setItem('bloomkraft_logged_in', 'true');
-    document.getElementById('loginModal').style.display = 'none';
-    document.getElementById('mainApp').style.display = 'block';
-    initApp();
-  } else {
-    err.textContent = 'Incorrect PIN.';
-    document.getElementById('loginPin').value = '';
+  function computeTotals(filter = { from: '', to: '' }) {
+    const inc = incomeRecords.filter(r => isInDateRange(r.date, filter));
+    const exp = expenseRecords.filter(r => isInDateRange(r.date, filter));
+    const totalIncome = inc.reduce((s, r) => s + r.amount, 0);
+    const totalExpenses = exp.reduce((s, r) => s + r.amount, 0);
+    return { totalIncome, totalExpenses, netProfit: totalIncome - totalExpenses };
   }
-}
 
-// ==============================
-// 📊 DATA
-// ==============================
-let incomeRecords = [];
-let expenseRecords = [];
-
-async function loadAllData() {
-  try {
-    const {  sales, error: salesErr } = await supabase
-      .from('sales')
-      .select('*')
-      .order('date', { ascending: false });
-    if (salesErr) throw salesErr;
-    incomeRecords = sales.map(s => ({
-      id: s.id,
-      date: s.date,
-      description: s.description || '',
-      payment: s.payment || 'Cash',
-      amount: parseFloat(s.amount) || 0
-    }));
-
-    const {  expenses, error: expErr } = await supabase
-      .from('expenses')
-      .select('*')
-      .order('date', { ascending: false });
-    if (expErr) throw expErr;
-    expenseRecords = expenses.map(e => ({
-      id: e.id,
-      date: e.date,
-      description: e.description || '',
-      payment: e.payment || 'Cash',
-      amount: parseFloat(e.amount) || 0
-    }));
-
-    renderAll();
-  } catch (err) {
-    console.error('Supabase error:', err);
-    alert('Failed to load data. Check console.');
+  // ==============================
+  // RENDERING
+  // ==============================
+  function renderAll() {
+    renderDashboard();
+    renderIncome();
+    renderExpenses();
   }
-}
 
-function renderAll() {
-  renderDashboard();
-  renderIncome();
-  renderExpenses();
-}
+  function renderDashboard() {
+    const filter = {
+      from: document.getElementById('dashboardFrom').value,
+      to: document.getElementById('dashboardTo').value
+    };
+    const { totalIncome, totalExpenses, netProfit } = computeTotals(filter);
+    
+    document.getElementById('totalIncomeEl').textContent = formatMVR(totalIncome);
+    document.getElementById('totalExpensesEl').textContent = formatMVR(totalExpenses);
+    const netEl = document.getElementById('netProfitEl');
+    netEl.textContent = formatMVR(netProfit);
+    netEl.style.color = netProfit >= 0 ? 'var(--success)' : 'var(--danger)';
 
-// ==============================
-// ⚙️ UTILS
-// ==============================
-function formatMVR(n) {
-  return (Number(n) || 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 }) + ' MVR';
-}
-
-function isInDateRange(dateStr, { from, to }) {
-  if (!from && !to) return true;
-  const d = new Date(dateStr);
-  if (from && d < new Date(from)) return false;
-  if (to && d > new Date(to)) return false;
-  return true;
-}
-
-function computeTotals(filter = { from: '', to: '' }) {
-  const inc = incomeRecords.filter(r => isInDateRange(r.date, filter));
-  const exp = expenseRecords.filter(r => isInDateRange(r.date, filter));
-  const totalIncome = inc.reduce((s, r) => s + r.amount, 0);
-  const totalExpenses = exp.reduce((s, r) => s + r.amount, 0);
-  return { totalIncome, totalExpenses, netProfit: totalIncome - totalExpenses };
-}
-
-// ==============================
-// 📈 DASHBOARD
-// ==============================
-let summaryBarChart = null;
-
-function renderDashboard() {
-  const filter = {
-    from: document.getElementById('dashboardFrom').value,
-    to: document.getElementById('dashboardTo').value
-  };
-  const { totalIncome, totalExpenses, netProfit } = computeTotals(filter);
-  
-  document.getElementById('totalIncomeEl').textContent = formatMVR(totalIncome);
-  document.getElementById('totalExpensesEl').textContent = formatMVR(totalExpenses);
-  const netEl = document.getElementById('netProfitEl');
-  netEl.textContent = formatMVR(netProfit);
-  netEl.style.color = netProfit >= 0 ? 'var(--success)' : 'var(--danger)';
-
-  const ctx = document.getElementById('summaryBarChart')?.getContext('2d');
-  if (ctx) {
-    if (summaryBarChart) summaryBarChart.destroy();
-    // ✅ CORRECT CHART.JS SYNTAX
-    summaryBarChart = new Chart(ctx, {
-      type: 'bar',
-       {
-        labels: ['Sale', 'Expenses'],
-        datasets: [{
-          label: 'Amount (MVR)',
-           [totalIncome, totalExpenses],
-          backgroundColor: ['#2fb6ac', '#ff6b6b'],
-          borderWidth: 0,
-          borderRadius: 6,
-          borderSkipped: false
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: {
-          x: { grid: { display: false }, ticks: { color: 'var(--muted)' } },
-          y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.04)' }, ticks: { callback: (val) => val === 0 ? '0' : '', color: 'var(--muted)' } }
+    const ctx = document.getElementById('summaryBarChart')?.getContext('2d');
+    if (ctx) {
+      if (summaryBarChart) summaryBarChart.destroy();
+      summaryBarChart = new Chart(ctx, {
+        type: 'bar',
+         {
+          labels: ['Sale', 'Expenses'],
+          datasets: [{
+            label: 'Amount (MVR)',
+             [totalIncome, totalExpenses],
+            backgroundColor: ['#2fb6ac', '#ff6b6b'],
+            borderWidth: 0,
+            borderRadius: 6,
+            borderSkipped: false
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { display: false }, ticks: { color: 'var(--muted)' } },
+            y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.04)' }, ticks: { callback: (val) => val === 0 ? '0' : '', color: 'var(--muted)' } }
+          }
         }
-      }
-    });
+      });
+    }
   }
-}
 
-// ==============================
-// 💰 TABLES
-// ==============================
-function renderIncome() {
-  const tbody = document.querySelector('#incomeTable tbody');
-  const filter = { from: document.getElementById('incomeFrom')?.value, to: document.getElementById('incomeTo')?.value };
-  const filtered = incomeRecords.filter(r => isInDateRange(r.date, filter));
-  tbody.innerHTML = '';
-  if (filtered.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="5" class="empty-state">No sale records</td></tr>`;
-    document.getElementById('incomeTotalFooter').textContent = 'MVR 0';
-    return;
-  }
-  filtered.forEach(r => {
-    const safeDesc = (r.description || '').replace(/'/g, "\\'");
-    tbody.innerHTML += `
-      <tr>
+  function renderIncome() {
+    const tbody = document.querySelector('#incomeTable tbody');
+    const filter = { from: document.getElementById('incomeFrom')?.value, to: document.getElementById('incomeTo')?.value };
+    const filtered = incomeRecords.filter(r => isInDateRange(r.date, filter));
+    tbody.innerHTML = '';
+    if (filtered.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5" class="empty-state">No sale records</td></tr>`;
+      document.getElementById('incomeTotalFooter').textContent = 'MVR 0';
+      return;
+    }
+    filtered.forEach(r => {
+      const safeDesc = (r.description || '').replace(/'/g, "\\'");
+      const row = document.createElement('tr');
+      row.innerHTML = `
         <td>${r.date}</td>
         <td>${r.description}</td>
         <td>${r.payment}</td>
         <td style="color:var(--success)">${formatMVR(r.amount)}</td>
         <td class="table-actions">
-          <button class="btn small secondary" onclick="generateInvoice('${r.id}', '${r.date}', '${safeDesc}', '${r.payment}', ${r.amount})">Invoice</button>
-          <button class="btn small secondary" onclick="openEditIncomeModal('${r.id}', '${r.date}', '${safeDesc}', '${r.payment}', ${r.amount})">Edit</button>
-          <button class="btn small danger" onclick="deleteIncome('${r.id}')">Delete</button>
+          <button class="btn small secondary" onclick="window.generateInvoice('${r.id}', '${r.date}', '${safeDesc}', '${r.payment}', ${r.amount})">Invoice</button>
+          <button class="btn small secondary" onclick="window.openEditIncomeModal('${r.id}', '${r.date}', '${safeDesc}', '${r.payment}', ${r.amount})">Edit</button>
+          <button class="btn small danger" onclick="window.deleteIncome('${r.id}')">Delete</button>
         </td>
-      </tr>
-    `;
-  });
-  const total = filtered.reduce((s, r) => s + r.amount, 0);
-  document.getElementById('incomeTotalFooter').textContent = formatMVR(total);
-}
-
-function renderExpenses() {
-  const tbody = document.querySelector('#expensesTable tbody');
-  const filter = { from: document.getElementById('expensesFrom')?.value, to: document.getElementById('expensesTo')?.value };
-  const filtered = expenseRecords.filter(r => isInDateRange(r.date, filter));
-  tbody.innerHTML = '';
-  if (filtered.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="5" class="empty-state">No expense records</td></tr>`;
-    document.getElementById('expensesTotalFooter').textContent = 'MVR 0';
-    return;
+      `;
+      tbody.appendChild(row);
+    });
+    const total = filtered.reduce((s, r) => s + r.amount, 0);
+    document.getElementById('incomeTotalFooter').textContent = formatMVR(total);
   }
-  filtered.forEach(r => {
-    const safeDesc = (r.description || '').replace(/'/g, "\\'");
-    tbody.innerHTML += `
-      <tr>
+
+  function renderExpenses() {
+    const tbody = document.querySelector('#expensesTable tbody');
+    const filter = { from: document.getElementById('expensesFrom')?.value, to: document.getElementById('expensesTo')?.value };
+    const filtered = expenseRecords.filter(r => isInDateRange(r.date, filter));
+    tbody.innerHTML = '';
+    if (filtered.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5" class="empty-state">No expense records</td></tr>`;
+      document.getElementById('expensesTotalFooter').textContent = 'MVR 0';
+      return;
+    }
+    filtered.forEach(r => {
+      const safeDesc = (r.description || '').replace(/'/g, "\\'");
+      const row = document.createElement('tr');
+      row.innerHTML = `
         <td>${r.date}</td>
         <td>${r.description}</td>
         <td>${r.payment}</td>
         <td style="color:var(--danger)">${formatMVR(r.amount)}</td>
         <td class="table-actions">
-          <button class="btn small secondary" onclick="openEditExpenseModal('${r.id}', '${r.date}', '${safeDesc}', '${r.payment}', ${r.amount})">Edit</button>
-          <button class="btn small danger" onclick="deleteExpense('${r.id}')">Delete</button>
+          <button class="btn small secondary" onclick="window.openEditExpenseModal('${r.id}', '${r.date}', '${safeDesc}', '${r.payment}', ${r.amount})">Edit</button>
+          <button class="btn small danger" onclick="window.deleteExpense('${r.id}')">Delete</button>
         </td>
-      </tr>
+      `;
+      tbody.appendChild(row);
+    });
+    const total = filtered.reduce((s, r) => s + r.amount, 0);
+    document.getElementById('expensesTotalFooter').textContent = formatMVR(total);
+  }
+
+  // ==============================
+  // CRUD
+  // ==============================
+  async function addSale(date, desc, payment, amount) {
+    const { error } = await supabase.from('sales').insert([{ date, description: desc, payment, amount }]);
+    if (error) throw error;
+  }
+
+  async function updateSale(id, date, desc, payment, amount) {
+    const { error } = await supabase.from('sales').update({ date, description: desc, payment, amount }).eq('id', id);
+    if (error) throw error;
+  }
+
+  async function deleteSale(id) {
+    const { error } = await supabase.from('sales').delete().eq('id', id);
+    if (error) throw error;
+  }
+
+  async function addExpense(date, desc, payment, amount) {
+    const { error } = await supabase.from('expenses').insert([{ date, description: desc, payment, amount }]);
+    if (error) throw error;
+  }
+
+  async function updateExpense(id, date, desc, payment, amount) {
+    const { error } = await supabase.from('expenses').update({ date, description: desc, payment, amount }).eq('id', id);
+    if (error) throw error;
+  }
+
+  async function deleteExpense(id) {
+    const { error } = await supabase.from('expenses').delete().eq('id', id);
+    if (error) throw error;
+  }
+
+  // ==============================
+  // MODALS & ACTIONS
+  // ==============================
+  window.generateInvoice = function(id, date, desc, payment, amount) {
+    const invoiceNum = `INV-${id.substring(0, 8).toUpperCase()}`;
+    document.getElementById('invoiceNumber').textContent = invoiceNum;
+    document.getElementById('invoiceDate').textContent = date;
+    document.getElementById('invoiceDesc').textContent = desc;
+    document.getElementById('invoicePayment').textContent = payment;
+    document.getElementById('invoiceItemDesc').textContent = desc;
+    document.getElementById('invoiceAmount').textContent = formatMVR(amount);
+    document.getElementById('invoiceTotal').textContent = formatMVR(amount);
+    document.getElementById('invoiceModal').style.display = 'flex';
+  };
+
+  window.openEditIncomeModal = function(id, date, desc, payment, amount) {
+    const modal = document.createElement('div');
+    modal.className = 'modal-backdrop';
+    modal.innerHTML = `
+      <div class="modal">
+        <button style="float:right; background:none; border:none; font-size:20px; cursor:pointer;" onclick="this.parentElement.remove()">✕</button>
+        <h3>Edit Sale</h3>
+        <div class="field"><label>Date</label><input type="date" id="m_date" value="${date}"></div>
+        <div class="field"><label>Description</label><input id="m_desc" value="${desc.replace(/"/g, '&quot;')}"></div>
+        <div class="field"><label>Payment</label>
+          <select id="m_pay">
+            <option value="Cash" ${payment === 'Cash' ? 'selected' : ''}>Cash</option>
+            <option value="Transfer" ${payment === 'Transfer' ? 'selected' : ''}>Transfer</option>
+          </select>
+        </div>
+        <div class="field"><label>Amount (MVR)</label><input type="number" id="m_amt" value="${amount}" step="0.01"></div>
+        <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:16px;">
+          <button class="btn secondary" onclick="this.parentElement.remove()">Cancel</button>
+          <button class="btn" onclick="window.saveIncome('${id}')">Save</button>
+        </div>
+      </div>
     `;
-  });
-  const total = filtered.reduce((s, r) => s + r.amount, 0);
-  document.getElementById('expensesTotalFooter').textContent = formatMVR(total);
-}
+    document.body.appendChild(modal);
+  };
 
-// ==============================
-// ✏️ CRUD
-// ==============================
-async function addSale(date, desc, payment, amount) {
-  const { error } = await supabase.from('sales').insert([{ date, description: desc, payment, amount }]);
-  if (error) throw error;
-}
-
-async function updateSale(id, date, desc, payment, amount) {
-  const { error } = await supabase.from('sales').update({ date, description: desc, payment, amount }).eq('id', id);
-  if (error) throw error;
-}
-
-async function deleteSale(id) {
-  const { error } = await supabase.from('sales').delete().eq('id', id);
-  if (error) throw error;
-}
-
-async function addExpense(date, desc, payment, amount) {
-  const { error } = await supabase.from('expenses').insert([{ date, description: desc, payment, amount }]);
-  if (error) throw error;
-}
-
-async function updateExpense(id, date, desc, payment, amount) {
-  const { error } = await supabase.from('expenses').update({ date, description: desc, payment, amount }).eq('id', id);
-  if (error) throw error;
-}
-
-async function deleteExpense(id) {
-  const { error } = await supabase.from('expenses').delete().eq('id', id);
-  if (error) throw error;
-}
-
-// ==============================
-// 🪟 MODALS
-// ==============================
-function openEditIncomeModal(id, date, desc, payment, amount) {
-  const modal = document.createElement('div');
-  modal.className = 'modal-backdrop';
-  modal.innerHTML = `
-    <div class="modal">
-      <button style="float:right; background:none; border:none; font-size:20px; cursor:pointer;" onclick="this.parentElement.remove()">✕</button>
-      <h3>Edit Sale</h3>
-      <div class="field"><label>Date</label><input type="date" id="m_date" value="${date}"></div>
-      <div class="field"><label>Description</label><input id="m_desc" value="${desc.replace(/"/g, '&quot;')}"></div>
-      <div class="field"><label>Payment</label>
-        <select id="m_pay">
-          <option value="Cash" ${payment === 'Cash' ? 'selected' : ''}>Cash</option>
-          <option value="Transfer" ${payment === 'Transfer' ? 'selected' : ''}>Transfer</option>
-        </select>
-      </div>
-      <div class="field"><label>Amount (MVR)</label><input type="number" id="m_amt" value="${amount}" step="0.01"></div>
-      <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:16px;">
-        <button class="btn secondary" onclick="this.parentElement.remove()">Cancel</button>
-        <button class="btn" onclick="saveIncome('${id}')">Save</button>
-      </div>
-    </div>
-  `;
-  document.body.appendChild(modal);
-}
-
-async function saveIncome(id) {
-  const date = document.getElementById('m_date').value;
-  const desc = document.getElementById('m_desc').value;
-  const payment = document.getElementById('m_pay').value;
-  const amount = parseFloat(document.getElementById('m_amt').value) || 0;
-  
-  try {
-    if (id === 'new') {
-      await addSale(date, desc, payment, amount);
-    } else {
-      await updateSale(id, date, desc, payment, amount);
-    }
-    await loadAllData();
-  } catch (err) {
-    alert('Save failed: ' + err.message);
-  }
-  // Close all edit modals
-  document.querySelectorAll('.modal-backdrop:not(#loginModal):not(#invoiceModal)').forEach(el => el.remove());
-}
-
-async function deleteIncome(id) {
-  if (confirm('Delete this sale?')) {
+  window.saveIncome = async function(id) {
+    const date = document.getElementById('m_date').value;
+    const desc = document.getElementById('m_desc').value;
+    const payment = document.getElementById('m_pay').value;
+    const amount = parseFloat(document.getElementById('m_amt').value) || 0;
+    
     try {
-      await deleteSale(id);
+      if (id === 'new') {
+        await addSale(date, desc, payment, amount);
+      } else {
+        await updateSale(id, date, desc, payment, amount);
+      }
       await loadAllData();
     } catch (err) {
-      alert('Delete failed: ' + err.message);
+      alert('Save failed: ' + err.message);
     }
-  }
-}
+    document.querySelectorAll('.modal-backdrop:not(#loginModal):not(#invoiceModal)').forEach(el => el.remove());
+  };
 
-function openEditExpenseModal(id, date, desc, payment, amount) {
-  const modal = document.createElement('div');
-  modal.className = 'modal-backdrop';
-  modal.innerHTML = `
-    <div class="modal">
-      <button style="float:right; background:none; border:none; font-size:20px; cursor:pointer;" onclick="this.parentElement.remove()">✕</button>
-      <h3>Edit Expense</h3>
-      <div class="field"><label>Date</label><input type="date" id="m_date" value="${date}"></div>
-      <div class="field"><label>Description</label><input id="m_desc" value="${desc.replace(/"/g, '&quot;')}"></div>
-      <div class="field"><label>Payment</label>
-        <select id="m_pay">
-          <option value="Cash" ${payment === 'Cash' ? 'selected' : ''}>Cash</option>
-          <option value="Transfer" ${payment === 'Transfer' ? 'selected' : ''}>Transfer</option>
-        </select>
-      </div>
-      <div class="field"><label>Amount (MVR)</label><input type="number" id="m_amt" value="${amount}" step="0.01"></div>
-      <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:16px;">
-        <button class="btn secondary" onclick="this.parentElement.remove()">Cancel</button>
-        <button class="btn" onclick="saveExpense('${id}')">Save</button>
-      </div>
-    </div>
-  `;
-  document.body.appendChild(modal);
-}
-
-async function saveExpense(id) {
-  const date = document.getElementById('m_date').value;
-  const desc = document.getElementById('m_desc').value;
-  const payment = document.getElementById('m_pay').value;
-  const amount = parseFloat(document.getElementById('m_amt').value) || 0;
-  
-  try {
-    if (id === 'new') {
-      await addExpense(date, desc, payment, amount);
-    } else {
-      await updateExpense(id, date, desc, payment, amount);
+  window.deleteIncome = async function(id) {
+    if (confirm('Delete this sale?')) {
+      try {
+        await deleteSale(id);
+        await loadAllData();
+      } catch (err) {
+        alert('Delete failed: ' + err.message);
+      }
     }
-    await loadAllData();
-  } catch (err) {
-    alert('Save failed: ' + err.message);
-  }
-  document.querySelectorAll('.modal-backdrop:not(#loginModal):not(#invoiceModal)').forEach(el => el.remove());
-}
+  };
 
-async function deleteExpense(id) {
-  if (confirm('Delete this expense?')) {
+  window.openEditExpenseModal = function(id, date, desc, payment, amount) {
+    const modal = document.createElement('div');
+    modal.className = 'modal-backdrop';
+    modal.innerHTML = `
+      <div class="modal">
+        <button style="float:right; background:none; border:none; font-size:20px; cursor:pointer;" onclick="this.parentElement.remove()">✕</button>
+        <h3>Edit Expense</h3>
+        <div class="field"><label>Date</label><input type="date" id="m_date" value="${date}"></div>
+        <div class="field"><label>Description</label><input id="m_desc" value="${desc.replace(/"/g, '&quot;')}"></div>
+        <div class="field"><label>Payment</label>
+          <select id="m_pay">
+            <option value="Cash" ${payment === 'Cash' ? 'selected' : ''}>Cash</option>
+            <option value="Transfer" ${payment === 'Transfer' ? 'selected' : ''}>Transfer</option>
+          </select>
+        </div>
+        <div class="field"><label>Amount (MVR)</label><input type="number" id="m_amt" value="${amount}" step="0.01"></div>
+        <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:16px;">
+          <button class="btn secondary" onclick="this.parentElement.remove()">Cancel</button>
+          <button class="btn" onclick="window.saveExpense('${id}')">Save</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+  };
+
+  window.saveExpense = async function(id) {
+    const date = document.getElementById('m_date').value;
+    const desc = document.getElementById('m_desc').value;
+    const payment = document.getElementById('m_pay').value;
+    const amount = parseFloat(document.getElementById('m_amt').value) || 0;
+    
     try {
-      await deleteExpense(id);
+      if (id === 'new') {
+        await addExpense(date, desc, payment, amount);
+      } else {
+        await updateExpense(id, date, desc, payment, amount);
+      }
       await loadAllData();
     } catch (err) {
-      alert('Delete failed: ' + err.message);
+      alert('Save failed: ' + err.message);
     }
-  }
-}
+    document.querySelectorAll('.modal-backdrop:not(#loginModal):not(#invoiceModal)').forEach(el => el.remove());
+  };
 
-function generateInvoice(id, date, desc, payment, amount) {
-  const invoiceNum = `INV-${id.substring(0, 8).toUpperCase()}`;
-  document.getElementById('invoiceNumber').textContent = invoiceNum;
-  document.getElementById('invoiceDate').textContent = date;
-  document.getElementById('invoiceDesc').textContent = desc;
-  document.getElementById('invoicePayment').textContent = payment;
-  document.getElementById('invoiceItemDesc').textContent = desc;
-  document.getElementById('invoiceAmount').textContent = formatMVR(amount);
-  document.getElementById('invoiceTotal').textContent = formatMVR(amount);
-  document.getElementById('invoiceModal').style.display = 'flex';
-}
+  window.deleteExpense = async function(id) {
+    if (confirm('Delete this expense?')) {
+      try {
+        await deleteExpense(id);
+        await loadAllData();
+      } catch (err) {
+        alert('Delete failed: ' + err.message);
+      }
+    }
+  };
 
-// ==============================
-// ➕ ADD BUTTONS
-// ==============================
-function setupEventListeners() {
-  // Login
-  document.getElementById('loginBtn').addEventListener('click', attemptLogin);
-  document.getElementById('loginPin').addEventListener('keypress', e => {
+  // ==============================
+  // EVENT LISTENERS
+  // ==============================
+  loginBtn.addEventListener('click', attemptLogin);
+  loginPin.addEventListener('keypress', e => {
     if (e.key === 'Enter') attemptLogin();
   });
 
@@ -883,7 +882,8 @@ function setupEventListeners() {
   });
 
   // Filters
-  ['dashboard','income','expenses'].forEach(p => {
+  const filters = ['dashboard','income','expenses'];
+  filters.forEach(p => {
     const apply = document.getElementById(`apply${p.charAt(0).toUpperCase() + p.slice(1)}Filter`);
     const clear = document.getElementById(`clear${p.charAt(0).toUpperCase() + p.slice(1)}Filter`);
     if (apply) apply.addEventListener('click', () => {
@@ -917,7 +917,7 @@ function setupEventListeners() {
         <div class="field"><label>Amount (MVR)</label><input type="number" id="m_amt" value="0" step="0.01"></div>
         <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:16px;">
           <button class="btn secondary" onclick="this.parentElement.remove()">Cancel</button>
-          <button class="btn" onclick="saveIncome('new')">Add</button>
+          <button class="btn" onclick="window.saveIncome('new')">Add</button>
         </div>
       </div>
     `;
@@ -940,7 +940,7 @@ function setupEventListeners() {
         <div class="field"><label>Amount (MVR)</label><input type="number" id="m_amt" value="0" step="0.01"></div>
         <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:16px;">
           <button class="btn secondary" onclick="this.parentElement.remove()">Cancel</button>
-          <button class="btn" onclick="saveExpense('new')">Add</button>
+          <button class="btn" onclick="window.saveExpense('new')">Add</button>
         </div>
       </div>
     `;
@@ -954,43 +954,36 @@ function setupEventListeners() {
   document.getElementById('exportExpensesCsv')?.addEventListener('click', () => {
     exportCsv('expenses.csv', ['Date','Description','Payment','Amount'], expenseRecords);
   });
-}
 
-function exportCsv(filename, headers, records) {
-  const csv = [headers, ...records.map(r => [r.date, r.description, r.payment, r.amount])]
-    .map(row => row.map(String).map(cell => cell.includes(',') ? `"${cell}"` : cell).join(','))
-    .join('\n');
-  const blob = new Blob([csv], { type: 'text/csv' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-// ==============================
-// 🚀 INIT
-// ==============================
-async function initApp() {
-  await loadAllData();
-}
-
-// Wait for DOM, then setup
-document.addEventListener('DOMContentLoaded', () => {
-  if (!checkLogin()) {
-    document.getElementById('loginModal').style.display = 'flex';
+  function exportCsv(filename, headers, records) {
+    const csv = [headers, ...records.map(r => [r.date, r.description, r.payment, r.amount])]
+      .map(row => row.map(String).map(cell => cell.includes(',') ? `"${cell}"` : cell).join(','))
+      .join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
   }
-  // Delay setup to ensure all elements exist
-  setTimeout(setupEventListeners, 100);
-});
 
-// Expose to global for inline handlers
-window.generateInvoice = generateInvoice;
-window.openEditIncomeModal = openEditIncomeModal;
-window.deleteIncome = deleteIncome;
-window.openEditExpenseModal = openEditExpenseModal;
-window.deleteExpense = deleteExpense;
+  // ==============================
+  // INIT
+  // ==============================
+  async function initApp() {
+    await loadAllData();
+  }
+
+  // Check login on start
+  if (sessionStorage.getItem('bloomkraft_logged_in') === 'true') {
+    loginModal.style.display = 'none';
+    mainApp.style.display = 'block';
+    initApp();
+  } else {
+    loginModal.style.display = 'flex';
+  }
+});
 </script>
 </body>
 </html>
