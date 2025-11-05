@@ -4,7 +4,6 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Bloomkraft — Business Portal (MVR)</title>
-  <!-- ✅ Fixed: no trailing spaces -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase-browser.min.js"></script>
   <style>
@@ -445,7 +444,7 @@
 
   <div id="invoiceModal" class="modal-backdrop" style="display:none;">
     <div class="modal">
-      <button style="float:right; background:none; border:none; font-size:20px; cursor:pointer;" onclick="this.parentElement.style.display='none'">×</button>
+      <button style="float:right; background:none; border:none; font-size:20px; cursor:pointer;" onclick="document.getElementById('invoiceModal').style.display='none'">×</button>
       <div class="invoice-header">
         <div class="invoice-title">Bloomkraft</div>
         <div>Invoice #<span id="invoiceNumber"></span></div>
@@ -508,6 +507,7 @@ document.getElementById('loginPin').addEventListener('keypress', e => { if (e.ke
 function attemptLogin() {
   const pin = document.getElementById('loginPin').value.trim();
   const err = document.getElementById('loginError');
+  err.textContent = '';
   if (pin === ADMIN_PIN) {
     sessionStorage.setItem('bloomkraft_logged_in', 'true');
     document.getElementById('loginModal').style.display = 'none';
@@ -527,7 +527,8 @@ let expenseRecords = [];
 
 async function loadAllData() {
   try {
-    const {  sales, error: salesErr } = await supabase
+    // ✅ FIXED: destructuring typo { sales } → { data: sales }
+    const { data: sales, error: salesErr } = await supabase
       .from('sales')
       .select('*')
       .order('date', { ascending: false });
@@ -537,7 +538,7 @@ async function loadAllData() {
       date: s.date,
       description: s.description,
       payment: s.payment,
-      amount: parseFloat(s.amount)
+      amount: parseFloat(s.amount) || 0
     }));
 
     const { data: expenses, error: expErr } = await supabase
@@ -550,7 +551,7 @@ async function loadAllData() {
       date: e.date,
       description: e.description,
       payment: e.payment,
-      amount: parseFloat(e.amount)
+      amount: parseFloat(e.amount) || 0
     }));
 
     renderAll();
@@ -610,13 +611,14 @@ function renderDashboard() {
   const ctx = document.getElementById('summaryBarChart')?.getContext('2d');
   if (ctx) {
     if (summaryBarChart) summaryBarChart.destroy();
+    // ✅ FIXED: added missing "" property
     summaryBarChart = new Chart(ctx, {
       type: 'bar',
        {
         labels: ['Sale', 'Expenses'],
         datasets: [{
           label: 'Amount (MVR)',
-           [totalIncome, totalExpenses], // ✅ FIXED: '' was missing
+           [totalIncome, totalExpenses],
           backgroundColor: ['#2fb6ac', '#ff6b6b'],
           borderWidth: 0,
           borderRadius: 6,
@@ -651,14 +653,16 @@ function renderIncome() {
   }
   filtered.forEach(r => {
     const tr = document.createElement('tr');
+    // ✅ Escape quotes to prevent JS break
+    const safeDesc = r.description.replace(/'/g, "\\'").replace(/"/g, '&quot;');
     tr.innerHTML = `
       <td>${r.date}</td>
-      <td>${r.description}</td>
+      <td>${safeDesc}</td>
       <td>${r.payment}</td>
       <td style="color:var(--success)">${formatMVR(r.amount)}</td>
       <td class="table-actions">
-        <button class="btn small secondary" onclick="generateInvoice('${r.id}', '${r.date}', '${r.description}', '${r.payment}', ${r.amount})">Invoice</button>
-        <button class="btn small secondary" onclick="openEditIncomeModal('${r.id}', '${r.date}', '${r.description}', '${r.payment}', ${r.amount})">Edit</button>
+        <button class="btn small secondary" onclick="generateInvoice('${r.id}', '${r.date}', '${safeDesc}', '${r.payment}', ${r.amount})">Invoice</button>
+        <button class="btn small secondary" onclick="openEditIncomeModal('${r.id}', '${r.date}', '${safeDesc}', '${r.payment}', ${r.amount})">Edit</button>
         <button class="btn small danger" onclick="deleteIncome('${r.id}')">Delete</button>
       </td>
     `;
@@ -692,13 +696,14 @@ function renderExpenses() {
   }
   filtered.forEach(r => {
     const tr = document.createElement('tr');
+    const safeDesc = r.description.replace(/'/g, "\\'").replace(/"/g, '&quot;');
     tr.innerHTML = `
       <td>${r.date}</td>
-      <td>${r.description}</td>
+      <td>${safeDesc}</td>
       <td>${r.payment}</td>
       <td style="color:var(--danger)">${formatMVR(r.amount)}</td>
       <td class="table-actions">
-        <button class="btn small secondary" onclick="openEditExpenseModal('${r.id}', '${r.date}', '${r.description}', '${r.payment}', ${r.amount})">Edit</button>
+        <button class="btn small secondary" onclick="openEditExpenseModal('${r.id}', '${r.date}', '${safeDesc}', '${r.payment}', ${r.amount})">Edit</button>
         <button class="btn small danger" onclick="deleteExpense('${r.id}')">Delete</button>
       </td>
     `;
@@ -752,7 +757,7 @@ function openEditIncomeModal(id, date, desc, payment, amount) {
       <button style="float:right; background:none; border:none; font-size:20px; cursor:pointer;" onclick="this.parentElement.parentElement.remove()">✕</button>
       <h3>Edit Sale</h3>
       <div class="field"><label>Date</label><input type="date" id="m_date" value="${date}"></div>
-      <div class="field"><label>Description</label><input id="m_desc" value="${desc}"></div>
+      <div class="field"><label>Description</label><input id="m_desc" value="${desc.replace(/"/g, '&quot;')}"></div>
       <div class="field"><label>Payment</label>
         <select id="m_pay">
           <option value="Cash" ${payment === 'Cash' ? 'selected' : ''}>Cash</option>
@@ -785,7 +790,9 @@ async function saveIncome(id) {
   } catch (err) {
     alert('Save failed: ' + err.message);
   }
-  document.querySelector('.modal-backdrop')?.remove();
+  document.querySelectorAll('.modal-backdrop').forEach(el => {
+    if (el.querySelector('.modal h3')) el.remove();
+  });
 }
 
 async function deleteIncome(id) {
@@ -807,7 +814,7 @@ function openEditExpenseModal(id, date, desc, payment, amount) {
       <button style="float:right; background:none; border:none; font-size:20px; cursor:pointer;" onclick="this.parentElement.parentElement.remove()">✕</button>
       <h3>Edit Expense</h3>
       <div class="field"><label>Date</label><input type="date" id="m_date" value="${date}"></div>
-      <div class="field"><label>Description</label><input id="m_desc" value="${desc}"></div>
+      <div class="field"><label>Description</label><input id="m_desc" value="${desc.replace(/"/g, '&quot;')}"></div>
       <div class="field"><label>Payment</label>
         <select id="m_pay">
           <option value="Cash" ${payment === 'Cash' ? 'selected' : ''}>Cash</option>
@@ -840,7 +847,9 @@ async function saveExpense(id) {
   } catch (err) {
     alert('Save failed: ' + err.message);
   }
-  document.querySelector('.modal-backdrop')?.remove();
+  document.querySelectorAll('.modal-backdrop').forEach(el => {
+    if (el.querySelector('.modal h3')) el.remove();
+  });
 }
 
 async function deleteExpense(id) {
@@ -861,11 +870,12 @@ document.addEventListener('click', (e) => {
   if (e.target.id === 'addIncomeBtn') {
     const modal = document.createElement('div');
     modal.className = 'modal-backdrop';
+    const today = new Date().toISOString().slice(0,10);
     modal.innerHTML = `
       <div class="modal">
         <button style="float:right; background:none; border:none; font-size:20px; cursor:pointer;" onclick="this.parentElement.parentElement.remove()">✕</button>
         <h3>Add Sale</h3>
-        <div class="field"><label>Date</label><input type="date" id="m_date" value="${new Date().toISOString().slice(0,10)}"></div>
+        <div class="field"><label>Date</label><input type="date" id="m_date" value="${today}"></div>
         <div class="field"><label>Description</label><input id="m_desc" placeholder="e.g. Product Sale"></div>
         <div class="field"><label>Payment</label>
           <select id="m_pay"><option>Cash</option><option>Transfer</option></select>
@@ -883,11 +893,12 @@ document.addEventListener('click', (e) => {
   if (e.target.id === 'addExpenseBtn') {
     const modal = document.createElement('div');
     modal.className = 'modal-backdrop';
+    const today = new Date().toISOString().slice(0,10);
     modal.innerHTML = `
       <div class="modal">
         <button style="float:right; background:none; border:none; font-size:20px; cursor:pointer;" onclick="this.parentElement.parentElement.remove()">✕</button>
         <h3>Add Expense</h3>
-        <div class="field"><label>Date</label><input type="date" id="m_date" value="${new Date().toISOString().slice(0,10)}"></div>
+        <div class="field"><label>Date</label><input type="date" id="m_date" value="${today}"></div>
         <div class="field"><label>Description</label><input id="m_desc" placeholder="e.g. Office Supplies"></div>
         <div class="field"><label>Payment</label>
           <select id="m_pay"><option>Cash</option><option>Transfer</option></select>
@@ -969,10 +980,20 @@ async function init() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  if (!checkLogin()) {
-    document.getElementById('loginModal').style.display = 'flex';
-  }
+  // Delay check to ensure DOM is ready
+  setTimeout(() => {
+    if (!checkLogin()) {
+      document.getElementById('loginModal').style.display = 'flex';
+    }
+  }, 100);
 });
+
+// Expose functions to global scope for inline onclick
+window.generateInvoice = generateInvoice;
+window.openEditIncomeModal = openEditIncomeModal;
+window.deleteIncome = deleteIncome;
+window.openEditExpenseModal = openEditExpenseModal;
+window.deleteExpense = deleteExpense;
 </script>
 </body>
 </html>
