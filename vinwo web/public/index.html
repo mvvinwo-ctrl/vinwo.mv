@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Bloomkraft — Business Portal (MVR)</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase-browser.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7"></script>
   <style>
     :root{
       --turquoise: #2fb6ac;
@@ -213,12 +213,16 @@
     }
 
     .modal-backdrop{
-      position:fixed; inset:0; 
-      background:rgba(4,12,17,0.4); 
-      display:flex;
-      align-items:center; 
-      justify-content:center; 
-      z-index:9999;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(4,12,17,0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
     }
     .modal{
       width:90%;
@@ -480,12 +484,12 @@
 
 <script>
 // ==============================
-// 🔑 SUPABASE CONFIG — NO TRAILING SPACES
+// 🔑 SUPABASE CONFIG — CLEANED
 // ==============================
 const SUPABASE_URL = 'https://skejswjowceevzkloiog.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNrZWpzd2pvd2NlZXZ6a2xvaW9nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwNDg0NDYsImV4cCI6MjA3NjYyNDQ0Nn0.Q9LSKeEkOO7FZv3SOKvJa8efksRfGFYrvZDKlQmKTqk';
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ==============================
 // ✅ LOGIN
@@ -501,9 +505,6 @@ function checkLogin() {
   return false;
 }
 
-document.getElementById('loginBtn').addEventListener('click', attemptLogin);
-document.getElementById('loginPin').addEventListener('keypress', e => { if (e.key === 'Enter') attemptLogin(); });
-
 function attemptLogin() {
   const pin = document.getElementById('loginPin').value.trim();
   const err = document.getElementById('loginError');
@@ -512,7 +513,7 @@ function attemptLogin() {
     sessionStorage.setItem('bloomkraft_logged_in', 'true');
     document.getElementById('loginModal').style.display = 'none';
     document.getElementById('mainApp').style.display = 'block';
-    init();
+    initApp();
   } else {
     err.textContent = 'Incorrect PIN.';
     document.getElementById('loginPin').value = '';
@@ -520,15 +521,14 @@ function attemptLogin() {
 }
 
 // ==============================
-// 📊 DATA FROM SUPABASE
+// 📊 DATA
 // ==============================
 let incomeRecords = [];
 let expenseRecords = [];
 
 async function loadAllData() {
   try {
-    // ✅ FIXED: destructuring typo { sales } → { data: sales }
-    const { data: sales, error: salesErr } = await supabase
+    const {  sales, error: salesErr } = await supabase
       .from('sales')
       .select('*')
       .order('date', { ascending: false });
@@ -536,12 +536,12 @@ async function loadAllData() {
     incomeRecords = sales.map(s => ({
       id: s.id,
       date: s.date,
-      description: s.description,
-      payment: s.payment,
+      description: s.description || '',
+      payment: s.payment || 'Cash',
       amount: parseFloat(s.amount) || 0
     }));
 
-    const { data: expenses, error: expErr } = await supabase
+    const {  expenses, error: expErr } = await supabase
       .from('expenses')
       .select('*')
       .order('date', { ascending: false });
@@ -549,15 +549,15 @@ async function loadAllData() {
     expenseRecords = expenses.map(e => ({
       id: e.id,
       date: e.date,
-      description: e.description,
-      payment: e.payment,
+      description: e.description || '',
+      payment: e.payment || 'Cash',
       amount: parseFloat(e.amount) || 0
     }));
 
     renderAll();
   } catch (err) {
-    console.error('Supabase load error:', err);
-    alert('Failed to load data from database. Check console.');
+    console.error('Supabase error:', err);
+    alert('Failed to load data. Check console.');
   }
 }
 
@@ -591,7 +591,7 @@ function computeTotals(filter = { from: '', to: '' }) {
 }
 
 // ==============================
-// 📈 DASHBOARD CHART — FIXED
+// 📈 DASHBOARD
 // ==============================
 let summaryBarChart = null;
 
@@ -611,7 +611,7 @@ function renderDashboard() {
   const ctx = document.getElementById('summaryBarChart')?.getContext('2d');
   if (ctx) {
     if (summaryBarChart) summaryBarChart.destroy();
-    // ✅ FIXED: added missing "" property
+    // ✅ CORRECT CHART.JS SYNTAX
     summaryBarChart = new Chart(ctx, {
       type: 'bar',
        {
@@ -639,7 +639,7 @@ function renderDashboard() {
 }
 
 // ==============================
-// 💰 SALE & EXPENSE TABLES
+// 💰 TABLES
 // ==============================
 function renderIncome() {
   const tbody = document.querySelector('#incomeTable tbody');
@@ -652,36 +652,23 @@ function renderIncome() {
     return;
   }
   filtered.forEach(r => {
-    const tr = document.createElement('tr');
-    // ✅ Escape quotes to prevent JS break
-    const safeDesc = r.description.replace(/'/g, "\\'").replace(/"/g, '&quot;');
-    tr.innerHTML = `
-      <td>${r.date}</td>
-      <td>${safeDesc}</td>
-      <td>${r.payment}</td>
-      <td style="color:var(--success)">${formatMVR(r.amount)}</td>
-      <td class="table-actions">
-        <button class="btn small secondary" onclick="generateInvoice('${r.id}', '${r.date}', '${safeDesc}', '${r.payment}', ${r.amount})">Invoice</button>
-        <button class="btn small secondary" onclick="openEditIncomeModal('${r.id}', '${r.date}', '${safeDesc}', '${r.payment}', ${r.amount})">Edit</button>
-        <button class="btn small danger" onclick="deleteIncome('${r.id}')">Delete</button>
-      </td>
+    const safeDesc = (r.description || '').replace(/'/g, "\\'");
+    tbody.innerHTML += `
+      <tr>
+        <td>${r.date}</td>
+        <td>${r.description}</td>
+        <td>${r.payment}</td>
+        <td style="color:var(--success)">${formatMVR(r.amount)}</td>
+        <td class="table-actions">
+          <button class="btn small secondary" onclick="generateInvoice('${r.id}', '${r.date}', '${safeDesc}', '${r.payment}', ${r.amount})">Invoice</button>
+          <button class="btn small secondary" onclick="openEditIncomeModal('${r.id}', '${r.date}', '${safeDesc}', '${r.payment}', ${r.amount})">Edit</button>
+          <button class="btn small danger" onclick="deleteIncome('${r.id}')">Delete</button>
+        </td>
+      </tr>
     `;
-    tbody.appendChild(tr);
   });
   const total = filtered.reduce((s, r) => s + r.amount, 0);
   document.getElementById('incomeTotalFooter').textContent = formatMVR(total);
-}
-
-function generateInvoice(id, date, desc, payment, amount) {
-  const invoiceNum = `INV-${id.substring(0, 8).toUpperCase()}`;
-  document.getElementById('invoiceNumber').textContent = invoiceNum;
-  document.getElementById('invoiceDate').textContent = date;
-  document.getElementById('invoiceDesc').textContent = desc;
-  document.getElementById('invoicePayment').textContent = payment;
-  document.getElementById('invoiceItemDesc').textContent = desc;
-  document.getElementById('invoiceAmount').textContent = formatMVR(amount);
-  document.getElementById('invoiceTotal').textContent = formatMVR(amount);
-  document.getElementById('invoiceModal').style.display = 'flex';
 }
 
 function renderExpenses() {
@@ -695,26 +682,26 @@ function renderExpenses() {
     return;
   }
   filtered.forEach(r => {
-    const tr = document.createElement('tr');
-    const safeDesc = r.description.replace(/'/g, "\\'").replace(/"/g, '&quot;');
-    tr.innerHTML = `
-      <td>${r.date}</td>
-      <td>${safeDesc}</td>
-      <td>${r.payment}</td>
-      <td style="color:var(--danger)">${formatMVR(r.amount)}</td>
-      <td class="table-actions">
-        <button class="btn small secondary" onclick="openEditExpenseModal('${r.id}', '${r.date}', '${safeDesc}', '${r.payment}', ${r.amount})">Edit</button>
-        <button class="btn small danger" onclick="deleteExpense('${r.id}')">Delete</button>
-      </td>
+    const safeDesc = (r.description || '').replace(/'/g, "\\'");
+    tbody.innerHTML += `
+      <tr>
+        <td>${r.date}</td>
+        <td>${r.description}</td>
+        <td>${r.payment}</td>
+        <td style="color:var(--danger)">${formatMVR(r.amount)}</td>
+        <td class="table-actions">
+          <button class="btn small secondary" onclick="openEditExpenseModal('${r.id}', '${r.date}', '${safeDesc}', '${r.payment}', ${r.amount})">Edit</button>
+          <button class="btn small danger" onclick="deleteExpense('${r.id}')">Delete</button>
+        </td>
+      </tr>
     `;
-    tbody.appendChild(tr);
   });
   const total = filtered.reduce((s, r) => s + r.amount, 0);
   document.getElementById('expensesTotalFooter').textContent = formatMVR(total);
 }
 
 // ==============================
-// ✏️ CRUD OPERATIONS
+// ✏️ CRUD
 // ==============================
 async function addSale(date, desc, payment, amount) {
   const { error } = await supabase.from('sales').insert([{ date, description: desc, payment, amount }]);
@@ -754,7 +741,7 @@ function openEditIncomeModal(id, date, desc, payment, amount) {
   modal.className = 'modal-backdrop';
   modal.innerHTML = `
     <div class="modal">
-      <button style="float:right; background:none; border:none; font-size:20px; cursor:pointer;" onclick="this.parentElement.parentElement.remove()">✕</button>
+      <button style="float:right; background:none; border:none; font-size:20px; cursor:pointer;" onclick="this.parentElement.remove()">✕</button>
       <h3>Edit Sale</h3>
       <div class="field"><label>Date</label><input type="date" id="m_date" value="${date}"></div>
       <div class="field"><label>Description</label><input id="m_desc" value="${desc.replace(/"/g, '&quot;')}"></div>
@@ -766,7 +753,7 @@ function openEditIncomeModal(id, date, desc, payment, amount) {
       </div>
       <div class="field"><label>Amount (MVR)</label><input type="number" id="m_amt" value="${amount}" step="0.01"></div>
       <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:16px;">
-        <button class="btn secondary" onclick="this.parentElement.parentElement.parentElement.remove()">Cancel</button>
+        <button class="btn secondary" onclick="this.parentElement.remove()">Cancel</button>
         <button class="btn" onclick="saveIncome('${id}')">Save</button>
       </div>
     </div>
@@ -790,9 +777,8 @@ async function saveIncome(id) {
   } catch (err) {
     alert('Save failed: ' + err.message);
   }
-  document.querySelectorAll('.modal-backdrop').forEach(el => {
-    if (el.querySelector('.modal h3')) el.remove();
-  });
+  // Close all edit modals
+  document.querySelectorAll('.modal-backdrop:not(#loginModal):not(#invoiceModal)').forEach(el => el.remove());
 }
 
 async function deleteIncome(id) {
@@ -811,7 +797,7 @@ function openEditExpenseModal(id, date, desc, payment, amount) {
   modal.className = 'modal-backdrop';
   modal.innerHTML = `
     <div class="modal">
-      <button style="float:right; background:none; border:none; font-size:20px; cursor:pointer;" onclick="this.parentElement.parentElement.remove()">✕</button>
+      <button style="float:right; background:none; border:none; font-size:20px; cursor:pointer;" onclick="this.parentElement.remove()">✕</button>
       <h3>Edit Expense</h3>
       <div class="field"><label>Date</label><input type="date" id="m_date" value="${date}"></div>
       <div class="field"><label>Description</label><input id="m_desc" value="${desc.replace(/"/g, '&quot;')}"></div>
@@ -823,7 +809,7 @@ function openEditExpenseModal(id, date, desc, payment, amount) {
       </div>
       <div class="field"><label>Amount (MVR)</label><input type="number" id="m_amt" value="${amount}" step="0.01"></div>
       <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:16px;">
-        <button class="btn secondary" onclick="this.parentElement.parentElement.parentElement.remove()">Cancel</button>
+        <button class="btn secondary" onclick="this.parentElement.remove()">Cancel</button>
         <button class="btn" onclick="saveExpense('${id}')">Save</button>
       </div>
     </div>
@@ -847,9 +833,7 @@ async function saveExpense(id) {
   } catch (err) {
     alert('Save failed: ' + err.message);
   }
-  document.querySelectorAll('.modal-backdrop').forEach(el => {
-    if (el.querySelector('.modal h3')) el.remove();
-  });
+  document.querySelectorAll('.modal-backdrop:not(#loginModal):not(#invoiceModal)').forEach(el => el.remove());
 }
 
 async function deleteExpense(id) {
@@ -863,17 +847,67 @@ async function deleteExpense(id) {
   }
 }
 
+function generateInvoice(id, date, desc, payment, amount) {
+  const invoiceNum = `INV-${id.substring(0, 8).toUpperCase()}`;
+  document.getElementById('invoiceNumber').textContent = invoiceNum;
+  document.getElementById('invoiceDate').textContent = date;
+  document.getElementById('invoiceDesc').textContent = desc;
+  document.getElementById('invoicePayment').textContent = payment;
+  document.getElementById('invoiceItemDesc').textContent = desc;
+  document.getElementById('invoiceAmount').textContent = formatMVR(amount);
+  document.getElementById('invoiceTotal').textContent = formatMVR(amount);
+  document.getElementById('invoiceModal').style.display = 'flex';
+}
+
 // ==============================
 // ➕ ADD BUTTONS
 // ==============================
-document.addEventListener('click', (e) => {
-  if (e.target.id === 'addIncomeBtn') {
+function setupEventListeners() {
+  // Login
+  document.getElementById('loginBtn').addEventListener('click', attemptLogin);
+  document.getElementById('loginPin').addEventListener('keypress', e => {
+    if (e.key === 'Enter') attemptLogin();
+  });
+
+  // Navigation
+  document.querySelectorAll('.nav a').forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      document.querySelectorAll('.nav a').forEach(x => x.classList.remove('active'));
+      link.classList.add('active');
+      const page = link.dataset.page;
+      document.querySelectorAll('.page').forEach(sec => {
+        sec.style.display = sec.id === `page-${page}` ? 'block' : 'none';
+      });
+    });
+  });
+
+  // Filters
+  ['dashboard','income','expenses'].forEach(p => {
+    const apply = document.getElementById(`apply${p.charAt(0).toUpperCase() + p.slice(1)}Filter`);
+    const clear = document.getElementById(`clear${p.charAt(0).toUpperCase() + p.slice(1)}Filter`);
+    if (apply) apply.addEventListener('click', () => {
+      if(p==='dashboard') renderDashboard();
+      else if(p==='income') renderIncome();
+      else renderExpenses();
+    });
+    if (clear) clear.addEventListener('click', () => {
+      document.getElementById(`${p}From`).value = '';
+      document.getElementById(`${p}To`).value = '';
+      if(p==='dashboard') renderDashboard();
+      else if(p==='income') renderIncome();
+      else renderExpenses();
+    });
+  });
+
+  // Add buttons
+  document.getElementById('addIncomeBtn').addEventListener('click', () => {
     const modal = document.createElement('div');
     modal.className = 'modal-backdrop';
     const today = new Date().toISOString().slice(0,10);
     modal.innerHTML = `
       <div class="modal">
-        <button style="float:right; background:none; border:none; font-size:20px; cursor:pointer;" onclick="this.parentElement.parentElement.remove()">✕</button>
+        <button style="float:right; background:none; border:none; font-size:20px; cursor:pointer;" onclick="this.parentElement.remove()">✕</button>
         <h3>Add Sale</h3>
         <div class="field"><label>Date</label><input type="date" id="m_date" value="${today}"></div>
         <div class="field"><label>Description</label><input id="m_desc" placeholder="e.g. Product Sale"></div>
@@ -882,21 +916,21 @@ document.addEventListener('click', (e) => {
         </div>
         <div class="field"><label>Amount (MVR)</label><input type="number" id="m_amt" value="0" step="0.01"></div>
         <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:16px;">
-          <button class="btn secondary" onclick="this.parentElement.parentElement.parentElement.remove()">Cancel</button>
+          <button class="btn secondary" onclick="this.parentElement.remove()">Cancel</button>
           <button class="btn" onclick="saveIncome('new')">Add</button>
         </div>
       </div>
     `;
     document.body.appendChild(modal);
-  }
+  });
 
-  if (e.target.id === 'addExpenseBtn') {
+  document.getElementById('addExpenseBtn').addEventListener('click', () => {
     const modal = document.createElement('div');
     modal.className = 'modal-backdrop';
     const today = new Date().toISOString().slice(0,10);
     modal.innerHTML = `
       <div class="modal">
-        <button style="float:right; background:none; border:none; font-size:20px; cursor:pointer;" onclick="this.parentElement.parentElement.remove()">✕</button>
+        <button style="float:right; background:none; border:none; font-size:20px; cursor:pointer;" onclick="this.parentElement.remove()">✕</button>
         <h3>Add Expense</h3>
         <div class="field"><label>Date</label><input type="date" id="m_date" value="${today}"></div>
         <div class="field"><label>Description</label><input id="m_desc" placeholder="e.g. Office Supplies"></div>
@@ -905,50 +939,22 @@ document.addEventListener('click', (e) => {
         </div>
         <div class="field"><label>Amount (MVR)</label><input type="number" id="m_amt" value="0" step="0.01"></div>
         <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:16px;">
-          <button class="btn secondary" onclick="this.parentElement.parentElement.parentElement.remove()">Cancel</button>
+          <button class="btn secondary" onclick="this.parentElement.remove()">Cancel</button>
           <button class="btn" onclick="saveExpense('new')">Add</button>
         </div>
       </div>
     `;
     document.body.appendChild(modal);
-  }
-});
+  });
 
-// ==============================
-// 🔄 NAVIGATION & FILTERS & EXPORT
-// ==============================
-document.addEventListener('click', (e) => {
-  if (e.target.matches('.nav a')) {
-    e.preventDefault();
-    document.querySelectorAll('.nav a').forEach(x => x.classList.remove('active'));
-    e.target.classList.add('active');
-    const page = e.target.dataset.page;
-    document.querySelectorAll('.page').forEach(sec => {
-      sec.style.display = sec.id === `page-${page}` ? 'block' : 'none';
-    });
-  }
-});
-
-['dashboard','income','expenses'].forEach(p => {
-  const applyBtn = document.getElementById(`apply${p.charAt(0).toUpperCase() + p.slice(1)}Filter`);
-  const clearBtn = document.getElementById(`clear${p.charAt(0).toUpperCase() + p.slice(1)}Filter`);
-  if (applyBtn) {
-    applyBtn.addEventListener('click', () => {
-      if(p==='dashboard') renderDashboard();
-      else if(p==='income') renderIncome();
-      else renderExpenses();
-    });
-  }
-  if (clearBtn) {
-    clearBtn.addEventListener('click', () => {
-      document.getElementById(`${p}From`).value = '';
-      document.getElementById(`${p}To`).value = '';
-      if(p==='dashboard') renderDashboard();
-      else if(p==='income') renderIncome();
-      else renderExpenses();
-    });
-  }
-});
+  // Export
+  document.getElementById('exportIncomeCsv')?.addEventListener('click', () => {
+    exportCsv('sale.csv', ['Date','Description','Payment','Amount'], incomeRecords);
+  });
+  document.getElementById('exportExpensesCsv')?.addEventListener('click', () => {
+    exportCsv('expenses.csv', ['Date','Description','Payment','Amount'], expenseRecords);
+  });
+}
 
 function exportCsv(filename, headers, records) {
   const csv = [headers, ...records.map(r => [r.date, r.description, r.payment, r.amount])]
@@ -963,32 +969,23 @@ function exportCsv(filename, headers, records) {
   URL.revokeObjectURL(url);
 }
 
-document.addEventListener('click', (e) => {
-  if (e.target.id === 'exportIncomeCsv') {
-    exportCsv('sale.csv', ['Date','Description','Payment','Amount'], incomeRecords);
-  }
-  if (e.target.id === 'exportExpensesCsv') {
-    exportCsv('expenses.csv', ['Date','Description','Payment','Amount'], expenseRecords);
-  }
-});
-
 // ==============================
 // 🚀 INIT
 // ==============================
-async function init() {
+async function initApp() {
   await loadAllData();
 }
 
+// Wait for DOM, then setup
 document.addEventListener('DOMContentLoaded', () => {
-  // Delay check to ensure DOM is ready
-  setTimeout(() => {
-    if (!checkLogin()) {
-      document.getElementById('loginModal').style.display = 'flex';
-    }
-  }, 100);
+  if (!checkLogin()) {
+    document.getElementById('loginModal').style.display = 'flex';
+  }
+  // Delay setup to ensure all elements exist
+  setTimeout(setupEventListeners, 100);
 });
 
-// Expose functions to global scope for inline onclick
+// Expose to global for inline handlers
 window.generateInvoice = generateInvoice;
 window.openEditIncomeModal = openEditIncomeModal;
 window.deleteIncome = deleteIncome;
